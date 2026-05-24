@@ -20,7 +20,7 @@ export function CreateDialog({
   title: string;
   triggerLabel: string;
   children: ReactNode;
-  onSubmit: (e: React.FormEvent) => Promise<void> | void;
+  onSubmit: (e: React.FormEvent) => unknown;
   busy?: boolean;
 }) {
   const [open, setOpen] = useState(false);
