@@ -20,11 +20,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Nexus ERP unifies sales, inventory, finance, and HR for growing businesses.",
       },
-      { property: "og:title", content: "Nexus ERP" },
+      { property: "og:title", content: "Nexus ERP — Run your business in one place" },
       {
         property: "og:description",
         content: "Sales, inventory, finance, and HR — one beautiful workspace.",
       },
+      { name: "twitter:title", content: "Nexus ERP — Run your business in one place" },
+      { name: "description", content: "All in one erp software!" },
+      { property: "og:description", content: "All in one erp software!" },
+      { name: "twitter:description", content: "All in one erp software!" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/93308fd9-414f-4504-a96d-54a126fab2d2/id-preview-4f2d878b--3af534ca-cade-4a2a-ac9c-764efb518fff.lovable.app-1779619270319.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/93308fd9-414f-4504-a96d-54a126fab2d2/id-preview-4f2d878b--3af534ca-cade-4a2a-ac9c-764efb518fff.lovable.app-1779619270319.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
