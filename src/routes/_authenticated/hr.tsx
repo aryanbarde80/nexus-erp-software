@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
 import { CreateDialog } from "@/components/nexus/CreateDialog";
+import { RowDelete } from "@/components/nexus/RowDelete";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -113,6 +114,7 @@ function HR() {
                 <TableHead>Hired</TableHead>
                 <TableHead>Salary</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -136,9 +138,10 @@ function HR() {
                   <TableCell className="text-muted-foreground">{e.hire_date}</TableCell>
                   <TableCell>{money(Number(e.salary))}</TableCell>
                   <TableCell><Badge variant={e.status === "active" ? "default" : "secondary"}>{e.status}</Badge></TableCell>
+                  <TableCell className="text-right"><RowDelete table="employees" id={e.id} invalidateKeys={[["employees"]]} /></TableCell>
                 </TableRow>
               )) : (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No employees yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">No employees yet.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

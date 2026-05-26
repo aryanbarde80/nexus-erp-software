@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
 import { StatCard } from "@/components/nexus/StatCard";
 import { CreateDialog } from "@/components/nexus/CreateDialog";
+import { RowDelete } from "@/components/nexus/RowDelete";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -113,6 +114,7 @@ function Finance() {
                 <TableHead>Vendor</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -123,9 +125,10 @@ function Finance() {
                   <TableCell className="text-muted-foreground">{e.vendor || "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{e.description || "—"}</TableCell>
                   <TableCell className="text-right font-medium">{money(Number(e.amount))}</TableCell>
+                  <TableCell className="text-right"><RowDelete table="expenses" id={e.id} invalidateKeys={[["expenses"]]} /></TableCell>
                 </TableRow>
               )) : (
-                <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No expenses yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No expenses yet.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
