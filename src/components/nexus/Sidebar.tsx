@@ -6,6 +6,10 @@ import {
   Wallet,
   UserCog,
   LogOut,
+  Briefcase,
+  Truck,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +19,12 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/sales", label: "Sales & CRM", icon: Users },
   { to: "/inventory", label: "Inventory", icon: Package },
+  { to: "/suppliers", label: "Suppliers & PO", icon: Truck },
+  { to: "/projects", label: "Projects", icon: Briefcase },
   { to: "/finance", label: "Finance", icon: Wallet },
   { to: "/hr", label: "HR", icon: UserCog },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export function Sidebar({ email }: { email?: string | null }) {
@@ -33,7 +41,7 @@ export function Sidebar({ email }: { email?: string | null }) {
       <div className="px-6 py-5">
         <Logo />
       </div>
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-1 px-3 overflow-y-auto">
         {NAV.map(({ to, label, icon: Icon }) => {
           const active = location.pathname.startsWith(to);
           return (
