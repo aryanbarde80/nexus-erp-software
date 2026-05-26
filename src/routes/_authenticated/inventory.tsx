@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
 import { CreateDialog } from "@/components/nexus/CreateDialog";
+import { RowDelete } from "@/components/nexus/RowDelete";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,7 @@ function Inventory() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState("");
 
   const productsQ = useQuery({
     queryKey: ["products"],
@@ -82,6 +84,9 @@ function Inventory() {
           </CreateDialog>
         }
       />
+      <div className="mb-4">
+        <Input placeholder="Search products…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+      </div>
       <Card className="border-border/60 shadow-soft">
         <CardContent className="p-0">
           <Table>
@@ -92,10 +97,11 @@ function Inventory() {
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {productsQ.data?.length ? productsQ.data.map((p) => {
+              {productsQ.data?.filter((p) => !search || `${p.name} ${p.sku ?? ""} ${p.category ?? ""}`.toLowerCase().includes(search.toLowerCase())).length ? productsQ.data!.filter((p) => !search || `${p.name} ${p.sku ?? ""} ${p.category ?? ""}`.toLowerCase().includes(search.toLowerCase())).map((p) => {
                 const lowStock = p.stock <= p.low_stock_threshold;
                 return (
                   <TableRow key={p.id}>
@@ -112,10 +118,11 @@ function Inventory() {
                         <Badge variant="secondary">{p.stock}</Badge>
                       )}
                     </TableCell>
+                    <TableCell className="text-right"><RowDelete table="products" id={p.id} invalidateKeys={[["products"]]} /></TableCell>
                   </TableRow>
                 );
               }) : (
-                <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

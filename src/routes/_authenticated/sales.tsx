@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
 import { CreateDialog } from "@/components/nexus/CreateDialog";
+import { RowDelete } from "@/components/nexus/RowDelete";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +32,7 @@ function Sales() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState("");
 
   const customersQ = useQuery({
     queryKey: ["customers"],
@@ -105,6 +107,9 @@ function Sales() {
   return (
     <div>
       <PageHeader title="Sales & CRM" subtitle="Manage customers and invoices." />
+      <div className="mb-4">
+        <Input placeholder="Search customers or invoices…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+      </div>
       <Tabs defaultValue="customers">
         <TabsList>
           <TabsTrigger value="customers"><Users className="mr-2 h-4 w-4" /> Customers</TabsTrigger>
@@ -146,19 +151,21 @@ function Sales() {
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customersQ.data?.length ? customersQ.data.map((c) => (
+                  {customersQ.data?.filter((c) => !search || `${c.name} ${c.company ?? ""} ${c.email ?? ""}`.toLowerCase().includes(search.toLowerCase())).length ? customersQ.data!.filter((c) => !search || `${c.name} ${c.company ?? ""} ${c.email ?? ""}`.toLowerCase().includes(search.toLowerCase())).map((c) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell className="text-muted-foreground">{c.company || "—"}</TableCell>
                       <TableCell className="text-muted-foreground">{c.email || "—"}</TableCell>
                       <TableCell className="text-muted-foreground">{c.phone || "—"}</TableCell>
                       <TableCell><Badge variant={c.status === "active" ? "default" : "secondary"}>{c.status}</Badge></TableCell>
+                      <TableCell className="text-right"><RowDelete table="customers" id={c.id} invalidateKeys={[["customers"]]} /></TableCell>
                     </TableRow>
                   )) : (
-                    <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No customers yet.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No customers yet.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -205,10 +212,11 @@ function Sales() {
                     <TableHead>Amount</TableHead>
                     <TableHead>Due</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoicesQ.data?.length ? invoicesQ.data.map((i: any) => (
+                  {invoicesQ.data?.filter((i: any) => !search || `${i.invoice_number} ${i.customers?.name ?? ""}`.toLowerCase().includes(search.toLowerCase())).length ? invoicesQ.data!.filter((i: any) => !search || `${i.invoice_number} ${i.customers?.name ?? ""}`.toLowerCase().includes(search.toLowerCase())).map((i: any) => (
                     <TableRow key={i.id}>
                       <TableCell className="font-medium">{i.invoice_number}</TableCell>
                       <TableCell className="text-muted-foreground">{i.customers?.name || "—"}</TableCell>
@@ -219,9 +227,10 @@ function Sales() {
                           {i.status}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-right"><RowDelete table="invoices" id={i.id} invalidateKeys={[["invoices-with-customer"], ["invoices"]]} /></TableCell>
                     </TableRow>
                   )) : (
-                    <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No invoices yet.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No invoices yet.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
