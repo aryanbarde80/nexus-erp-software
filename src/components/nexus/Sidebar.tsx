@@ -10,6 +10,11 @@ import {
   Truck,
   BarChart3,
   Settings,
+  FileText,
+  CreditCard,
+  Calendar,
+  CalendarOff,
+  Boxes,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,11 +23,16 @@ import { Button } from "@/components/ui/button";
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/sales", label: "Sales & CRM", icon: Users },
+  { to: "/quotes", label: "Quotes", icon: FileText },
+  { to: "/payments", label: "Payments", icon: CreditCard },
   { to: "/inventory", label: "Inventory", icon: Package },
+  { to: "/stock", label: "Stock movements", icon: Boxes },
   { to: "/suppliers", label: "Suppliers & PO", icon: Truck },
   { to: "/projects", label: "Projects", icon: Briefcase },
+  { to: "/calendar", label: "Calendar", icon: Calendar },
   { to: "/finance", label: "Finance", icon: Wallet },
   { to: "/hr", label: "HR", icon: UserCog },
+  { to: "/leaves", label: "Leave requests", icon: CalendarOff },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
