@@ -82,7 +82,7 @@ function Assets() {
       <div className="mb-6 grid gap-4 md:grid-cols-3">
         <StatCard label="Total assets" value={String(q.data?.length ?? 0)} icon={Boxes} />
         <StatCard label="In use" value={String(inUse)} icon={CheckCircle2} />
-        <StatCard label="Maintenance" value={String(repair)} icon={Wrench} hint={money(totalValue) + " total value"} />
+        <StatCard label="Maintenance" value={String(repair)} icon={Wrench} delta={money(totalValue) + " total value"} />
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
