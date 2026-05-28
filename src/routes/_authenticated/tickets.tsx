@@ -82,9 +82,9 @@ function Tickets() {
     <div>
       <PageHeader title="Support tickets" subtitle="Customer support and issue tracking." />
       <div className="mb-6 grid gap-4 md:grid-cols-3">
-        <StatCard title="Open" value={String(open)} icon={LifeBuoy} />
-        <StatCard title="Urgent" value={String(urgent)} icon={AlertCircle} />
-        <StatCard title="Resolved" value={String(closed)} icon={CheckCircle2} />
+        <StatCard label="Open" value={String(open)} icon={LifeBuoy} />
+        <StatCard label="Urgent" value={String(urgent)} icon={AlertCircle} />
+        <StatCard label="Resolved" value={String(closed)} icon={CheckCircle2} />
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">

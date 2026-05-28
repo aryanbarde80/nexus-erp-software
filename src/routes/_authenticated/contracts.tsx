@@ -74,9 +74,9 @@ function Contracts() {
     <div>
       <PageHeader title="Contracts" subtitle="Manage agreements with clients and vendors." />
       <div className="mb-6 grid gap-4 md:grid-cols-3">
-        <StatCard title="Active contracts" value={String(active)} icon={FileSignature} />
-        <StatCard title="Expiring soon" value={String(soon)} icon={AlarmClock} hint="Next 30 days" />
-        <StatCard title="Total value" value={money(totalValue)} icon={DollarSign} />
+        <StatCard label="Active contracts" value={String(active)} icon={FileSignature} />
+        <StatCard label="Expiring soon" value={String(soon)} icon={AlarmClock} hint="Next 30 days" />
+        <StatCard label="Total value" value={money(totalValue)} icon={DollarSign} />
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
