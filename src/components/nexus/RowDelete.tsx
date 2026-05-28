@@ -9,7 +9,7 @@ export function RowDelete({
   id,
   invalidateKeys,
 }: {
-  table: "customers" | "invoices" | "products" | "expenses" | "employees" | "projects" | "tasks" | "suppliers" | "purchase_orders" | "quotes" | "payments" | "leave_requests" | "stock_movements" | "meetings" | "activity_log";
+  table: "customers" | "invoices" | "products" | "expenses" | "employees" | "projects" | "tasks" | "suppliers" | "purchase_orders" | "quotes" | "payments" | "leave_requests" | "stock_movements" | "meetings" | "activity_log" | "assets" | "tickets" | "contracts" | "announcements" | "departments";
   id: string;
   invalidateKeys: string[][];
 }) {
