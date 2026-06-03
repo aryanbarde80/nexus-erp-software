@@ -20,6 +20,7 @@ import {
   FileSignature,
   Megaphone,
   Building2,
+  ShoppingCart,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ import { Button } from "@/components/ui/button";
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/sales", label: "Sales & CRM", icon: Users },
+  { to: "/store", label: "Store", icon: ShoppingCart },
   { to: "/quotes", label: "Quotes", icon: FileText },
   { to: "/payments", label: "Payments", icon: CreditCard },
   { to: "/contracts", label: "Contracts", icon: FileSignature },
