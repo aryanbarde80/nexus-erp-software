@@ -147,7 +147,7 @@ function Store() {
         invoice_number: invNumber,
         amount: total,
         tax,
-        status: "paid",
+        status: method === "cash" ? "pending" : "paid",
         issue_date: new Date().toISOString().slice(0, 10),
         due_date: new Date().toISOString().slice(0, 10),
         notes: `Store order\n${lineDetails}\nSubtotal: ${money(subtotal)}\nTax: ${money(tax)}\nTotal: ${money(total)}\nBill to: ${custAddress || "—"}`,
