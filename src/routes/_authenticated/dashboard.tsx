@@ -24,6 +24,23 @@ const money = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
 function Dashboard() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [seeding, setSeeding] = useState(false);
+  const runSeed = async () => {
+    if (!user) return;
+    setSeeding(true);
+    try {
+      await seedDemoData(user.id);
+      await qc.invalidateQueries();
+      toast.success("Demo data loaded across all modules");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Seeding failed");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const { data } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
