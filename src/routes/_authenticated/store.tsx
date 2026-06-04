@@ -113,13 +113,32 @@ function Store() {
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  const placeOrder = async () => {
-    if (!user) return;
+  const startCheckout = () => {
     if (!cart.length) return toast.error("Cart is empty");
     if (!custName.trim()) return toast.error("Customer name required");
-    if (method === "card" && (cardNumber.replace(/\s/g, "").length < 12 || cardCvc.length < 3)) {
+    if (method === "card") {
+      setCheckoutOpen(false);
+      setGatewayStage("form");
+      setGatewayOpen(true);
+    } else {
+      void placeOrder();
+    }
+  };
+
+  const runGatewayPayment = async () => {
+    if (cardNumber.replace(/\s/g, "").length < 12 || cardCvc.length < 3 || !cardExp) {
       return toast.error("Invalid card details");
     }
+    setGatewayStage("processing");
+    // simulate gateway latency
+    await new Promise((r) => setTimeout(r, 1600));
+    setGatewayStage("success");
+    await new Promise((r) => setTimeout(r, 700));
+    await placeOrder();
+  };
+
+  const placeOrder = async () => {
+    if (!user) return;
     setBusy(true);
 
     // 1. Find or create customer
@@ -198,12 +217,14 @@ function Store() {
     });
 
     setBusy(false);
+    setGatewayOpen(false);
     setCheckoutOpen(false);
     setSheetOpen(false);
     setCart([]);
     toast.success("Order placed!");
     navigate({ to: "/store/invoice/$id", params: { id: invoice.id } });
   };
+
 
   return (
     <div>
