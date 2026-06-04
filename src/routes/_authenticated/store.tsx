@@ -37,6 +37,8 @@ function Store() {
   const [category, setCategory] = useState<string>("all");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [gatewayOpen, setGatewayOpen] = useState(false);
+  const [gatewayStage, setGatewayStage] = useState<"form" | "processing" | "success">("form");
   const [busy, setBusy] = useState(false);
 
   // Checkout fields
@@ -49,6 +51,18 @@ function Store() {
   const [cardExp, setCardExp] = useState("");
   const [cardCvc, setCardCvc] = useState("");
   const [method, setMethod] = useState("card");
+
+  const fillTestUser = () => {
+    setCustName("Test User");
+    setCustEmail("test.user@example.com");
+    setCustPhone("+1 555 0100");
+    setCustAddress("221B Baker Street, London, NW1 6XE");
+    setCardName("Test User");
+    setCardNumber("4242 4242 4242 4242");
+    setCardExp("12/29");
+    setCardCvc("123");
+    toast.success("Test user details filled");
+  };
 
   const productsQ = useQuery({
     queryKey: ["store-products"],
