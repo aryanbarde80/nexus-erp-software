@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ShoppingCart, Plus, Minus, Trash2, Package, CreditCard, CheckCircle2 } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Package, CreditCard, CheckCircle2, Lock, Loader2, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
