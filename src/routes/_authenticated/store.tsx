@@ -376,22 +376,9 @@ function Store() {
                 </Select>
               </Field>
               {method === "card" && (
-                <>
-                  <Field label="Name on card"><Input value={cardName} onChange={(e) => setCardName(e.target.value)} /></Field>
-                  <Field label="Card number">
-                    <Input
-                      inputMode="numeric"
-                      maxLength={19}
-                      placeholder="4242 4242 4242 4242"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value.replace(/[^\d ]/g, ""))}
-                    />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Expiry"><Input placeholder="MM/YY" maxLength={5} value={cardExp} onChange={(e) => setCardExp(e.target.value)} /></Field>
-                    <Field label="CVC"><Input maxLength={4} inputMode="numeric" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ""))} /></Field>
-                  </div>
-                </>
+                <p className="rounded-md border border-dashed bg-muted/40 p-3 text-xs text-muted-foreground">
+                  You'll enter card details in the secure payment window on the next step.
+                </p>
               )}
             </div>
 
@@ -412,13 +399,90 @@ function Store() {
                   <Row label="Total" value={money(total)} bold />
                 </div>
               </div>
-              <Button className="mt-4 w-full" disabled={busy} onClick={placeOrder}>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                {busy ? "Processing…" : `Pay ${money(total)}`}
+              <Button className="mt-4 w-full" disabled={busy} onClick={startCheckout}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                {method === "card" ? `Continue to payment — ${money(total)}` : `Place order — ${money(total)}`}
               </Button>
               <p className="mt-2 text-center text-xs text-muted-foreground">Demo checkout. No real charge.</p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Fake Payment Gateway */}
+      <Dialog open={gatewayOpen} onOpenChange={(o) => { if (!busy && gatewayStage !== "processing") setGatewayOpen(o); }}>
+        <DialogContent className="overflow-hidden p-0 sm:max-w-md">
+          <div className="flex items-center justify-between border-b bg-gradient-to-r from-primary/10 to-chart-5/10 px-5 py-3">
+            <div className="flex items-center gap-2">
+              <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
+                <Lock className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">NexusPay Secure Checkout</p>
+                <p className="text-[10px] text-muted-foreground">256-bit TLS · PCI-DSS sandbox</p>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px]">TEST MODE</Badge>
+          </div>
+
+          {gatewayStage === "form" && (
+            <div className="space-y-4 p-5">
+              <div className="rounded-lg border bg-muted/40 p-3 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Merchant</span><span className="font-medium">Nexus Store</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-semibold">{money(total)}</span></div>
+              </div>
+
+              <Button type="button" variant="outline" className="w-full border-dashed" onClick={fillTestUser}>
+                <Zap className="mr-2 h-4 w-4 text-warning" />
+                Use Test User (autofill card)
+              </Button>
+
+              <div className="space-y-3">
+                <Field label="Cardholder name"><Input value={cardName} onChange={(e) => setCardName(e.target.value)} placeholder="Jane Doe" /></Field>
+                <Field label="Card number">
+                  <Input
+                    inputMode="numeric"
+                    maxLength={19}
+                    placeholder="4242 4242 4242 4242"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value.replace(/[^\d ]/g, ""))}
+                  />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Expiry"><Input placeholder="MM/YY" maxLength={5} value={cardExp} onChange={(e) => setCardExp(e.target.value)} /></Field>
+                  <Field label="CVC"><Input maxLength={4} inputMode="numeric" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ""))} /></Field>
+                </div>
+              </div>
+
+              <Button className="w-full" onClick={runGatewayPayment}>
+                <Lock className="mr-2 h-4 w-4" />
+                Pay {money(total)}
+              </Button>
+              <p className="text-center text-[10px] text-muted-foreground">By paying you authorise Nexus Store to charge your card.</p>
+            </div>
+          )}
+
+          {gatewayStage === "processing" && (
+            <div className="flex flex-col items-center gap-4 px-5 py-12 text-center">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <div>
+                <p className="font-semibold">Authorising payment…</p>
+                <p className="text-xs text-muted-foreground">Contacting issuing bank · do not close this window</p>
+              </div>
+            </div>
+          )}
+
+          {gatewayStage === "success" && (
+            <div className="flex flex-col items-center gap-4 px-5 py-12 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-success/15 text-success">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <div>
+                <p className="font-semibold">Payment approved</p>
+                <p className="text-xs text-muted-foreground">Generating your invoice…</p>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
