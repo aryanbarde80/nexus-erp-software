@@ -104,6 +104,12 @@ function Dashboard() {
       <PageHeader
         title="Dashboard"
         subtitle="A live snapshot of your operations."
+        actions={
+          <Button onClick={runSeed} disabled={seeding} variant="outline">
+            <Sparkles className="mr-2 h-4 w-4" />
+            {seeding ? "Loading demo…" : "Load demo data"}
+          </Button>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
