@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ShoppingCart, Plus, Minus, Trash2, Package, CreditCard, CheckCircle2 } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Package, CreditCard, CheckCircle2, Lock, Loader2, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
@@ -37,6 +37,8 @@ function Store() {
   const [category, setCategory] = useState<string>("all");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [gatewayOpen, setGatewayOpen] = useState(false);
+  const [gatewayStage, setGatewayStage] = useState<"form" | "processing" | "success">("form");
   const [busy, setBusy] = useState(false);
 
   // Checkout fields
@@ -49,6 +51,18 @@ function Store() {
   const [cardExp, setCardExp] = useState("");
   const [cardCvc, setCardCvc] = useState("");
   const [method, setMethod] = useState("card");
+
+  const fillTestUser = () => {
+    setCustName("Test User");
+    setCustEmail("test.user@example.com");
+    setCustPhone("+1 555 0100");
+    setCustAddress("221B Baker Street, London, NW1 6XE");
+    setCardName("Test User");
+    setCardNumber("4242 4242 4242 4242");
+    setCardExp("12/29");
+    setCardCvc("123");
+    toast.success("Test user details filled");
+  };
 
   const productsQ = useQuery({
     queryKey: ["store-products"],
@@ -99,13 +113,32 @@ function Store() {
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  const placeOrder = async () => {
-    if (!user) return;
+  const startCheckout = () => {
     if (!cart.length) return toast.error("Cart is empty");
     if (!custName.trim()) return toast.error("Customer name required");
-    if (method === "card" && (cardNumber.replace(/\s/g, "").length < 12 || cardCvc.length < 3)) {
+    if (method === "card") {
+      setCheckoutOpen(false);
+      setGatewayStage("form");
+      setGatewayOpen(true);
+    } else {
+      void placeOrder();
+    }
+  };
+
+  const runGatewayPayment = async () => {
+    if (cardNumber.replace(/\s/g, "").length < 12 || cardCvc.length < 3 || !cardExp) {
       return toast.error("Invalid card details");
     }
+    setGatewayStage("processing");
+    // simulate gateway latency
+    await new Promise((r) => setTimeout(r, 1600));
+    setGatewayStage("success");
+    await new Promise((r) => setTimeout(r, 700));
+    await placeOrder();
+  };
+
+  const placeOrder = async () => {
+    if (!user) return;
     setBusy(true);
 
     // 1. Find or create customer
@@ -184,12 +217,14 @@ function Store() {
     });
 
     setBusy(false);
+    setGatewayOpen(false);
     setCheckoutOpen(false);
     setSheetOpen(false);
     setCart([]);
     toast.success("Order placed!");
     navigate({ to: "/store/invoice/$id", params: { id: invoice.id } });
   };
+
 
   return (
     <div>
@@ -341,22 +376,9 @@ function Store() {
                 </Select>
               </Field>
               {method === "card" && (
-                <>
-                  <Field label="Name on card"><Input value={cardName} onChange={(e) => setCardName(e.target.value)} /></Field>
-                  <Field label="Card number">
-                    <Input
-                      inputMode="numeric"
-                      maxLength={19}
-                      placeholder="4242 4242 4242 4242"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value.replace(/[^\d ]/g, ""))}
-                    />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Expiry"><Input placeholder="MM/YY" maxLength={5} value={cardExp} onChange={(e) => setCardExp(e.target.value)} /></Field>
-                    <Field label="CVC"><Input maxLength={4} inputMode="numeric" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ""))} /></Field>
-                  </div>
-                </>
+                <p className="rounded-md border border-dashed bg-muted/40 p-3 text-xs text-muted-foreground">
+                  You'll enter card details in the secure payment window on the next step.
+                </p>
               )}
             </div>
 
@@ -377,13 +399,90 @@ function Store() {
                   <Row label="Total" value={money(total)} bold />
                 </div>
               </div>
-              <Button className="mt-4 w-full" disabled={busy} onClick={placeOrder}>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                {busy ? "Processing…" : `Pay ${money(total)}`}
+              <Button className="mt-4 w-full" disabled={busy} onClick={startCheckout}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                {method === "card" ? `Continue to payment — ${money(total)}` : `Place order — ${money(total)}`}
               </Button>
               <p className="mt-2 text-center text-xs text-muted-foreground">Demo checkout. No real charge.</p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Fake Payment Gateway */}
+      <Dialog open={gatewayOpen} onOpenChange={(o) => { if (!busy && gatewayStage !== "processing") setGatewayOpen(o); }}>
+        <DialogContent className="overflow-hidden p-0 sm:max-w-md">
+          <div className="flex items-center justify-between border-b bg-gradient-to-r from-primary/10 to-chart-5/10 px-5 py-3">
+            <div className="flex items-center gap-2">
+              <div className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
+                <Lock className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">NexusPay Secure Checkout</p>
+                <p className="text-[10px] text-muted-foreground">256-bit TLS · PCI-DSS sandbox</p>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px]">TEST MODE</Badge>
+          </div>
+
+          {gatewayStage === "form" && (
+            <div className="space-y-4 p-5">
+              <div className="rounded-lg border bg-muted/40 p-3 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Merchant</span><span className="font-medium">Nexus Store</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-semibold">{money(total)}</span></div>
+              </div>
+
+              <Button type="button" variant="outline" className="w-full border-dashed" onClick={fillTestUser}>
+                <Zap className="mr-2 h-4 w-4 text-warning" />
+                Use Test User (autofill card)
+              </Button>
+
+              <div className="space-y-3">
+                <Field label="Cardholder name"><Input value={cardName} onChange={(e) => setCardName(e.target.value)} placeholder="Jane Doe" /></Field>
+                <Field label="Card number">
+                  <Input
+                    inputMode="numeric"
+                    maxLength={19}
+                    placeholder="4242 4242 4242 4242"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value.replace(/[^\d ]/g, ""))}
+                  />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Expiry"><Input placeholder="MM/YY" maxLength={5} value={cardExp} onChange={(e) => setCardExp(e.target.value)} /></Field>
+                  <Field label="CVC"><Input maxLength={4} inputMode="numeric" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ""))} /></Field>
+                </div>
+              </div>
+
+              <Button className="w-full" onClick={runGatewayPayment}>
+                <Lock className="mr-2 h-4 w-4" />
+                Pay {money(total)}
+              </Button>
+              <p className="text-center text-[10px] text-muted-foreground">By paying you authorise Nexus Store to charge your card.</p>
+            </div>
+          )}
+
+          {gatewayStage === "processing" && (
+            <div className="flex flex-col items-center gap-4 px-5 py-12 text-center">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <div>
+                <p className="font-semibold">Authorising payment…</p>
+                <p className="text-xs text-muted-foreground">Contacting issuing bank · do not close this window</p>
+              </div>
+            </div>
+          )}
+
+          {gatewayStage === "success" && (
+            <div className="flex flex-col items-center gap-4 px-5 py-12 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-full bg-success/15 text-success">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <div>
+                <p className="font-semibold">Payment approved</p>
+                <p className="text-xs text-muted-foreground">Generating your invoice…</p>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

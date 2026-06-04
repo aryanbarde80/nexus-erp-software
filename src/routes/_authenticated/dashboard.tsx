@@ -1,15 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Users, Package, Wallet, UserCog, TrendingUp, AlertTriangle } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Users, Package, Wallet, UserCog, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { seedDemoData } from "@/lib/seed-demo";
 import { PageHeader } from "@/components/nexus/PageHeader";
 import { StatCard } from "@/components/nexus/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -19,6 +24,23 @@ const money = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
 function Dashboard() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [seeding, setSeeding] = useState(false);
+  const runSeed = async () => {
+    if (!user) return;
+    setSeeding(true);
+    try {
+      await seedDemoData(user.id);
+      await qc.invalidateQueries();
+      toast.success("Demo data loaded across all modules");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Seeding failed");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const { data } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
@@ -82,6 +104,12 @@ function Dashboard() {
       <PageHeader
         title="Dashboard"
         subtitle="A live snapshot of your operations."
+        actions={
+          <Button onClick={runSeed} disabled={seeding} variant="outline">
+            <Sparkles className="mr-2 h-4 w-4" />
+            {seeding ? "Loading demo…" : "Load demo data"}
+          </Button>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
