@@ -23,6 +23,8 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "@tanstack/react-router";
 import { CreditCard, ExternalLink } from "lucide-react";
+import { logActivity } from "@/lib/activity";
+import { ActivityTimeline } from "@/components/nexus/ActivityTimeline";
 
 export const Route = createFileRoute("/_authenticated/sales")({
   component: Sales,
@@ -110,6 +112,12 @@ function Sales() {
   const setInvoiceStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("invoices").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "invoice", entityId: id,
+        action: "status_changed", description: `Status set to ${status}`,
+      });
+    }
     toast.success(`Invoice marked ${status}`);
     qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
   };
@@ -125,6 +133,11 @@ function Sales() {
     });
     if (error) return toast.error(error.message);
     await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
+    await logActivity({
+      userId: user.id, entityType: "invoice", entityId: inv.id,
+      action: "payment_received",
+      description: `Payment of ${money(Number(inv.amount))} recorded via card`,
+    });
     toast.success("Payment recorded");
     qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
     qc.invalidateQueries({ queryKey: ["payments-with-invoice"] });
@@ -263,6 +276,7 @@ function Sales() {
                         <Button asChild size="icon" variant="ghost" className="h-8 w-8" title="Open invoice">
                           <Link to="/store/invoice/$id" params={{ id: i.id }}><ExternalLink className="h-4 w-4" /></Link>
                         </Button>
+                        <ActivityTimeline entityType="invoice" entityId={i.id} title={`Invoice ${i.invoice_number}`} />
                         {i.status !== "paid" && (
                           <Button size="sm" variant="outline" onClick={() => recordPayment(i)}>
                             <CreditCard className="mr-1 h-3.5 w-3.5" /> Pay

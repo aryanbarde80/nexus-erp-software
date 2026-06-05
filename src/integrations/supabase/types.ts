@@ -19,6 +19,7 @@ export type Database = {
           action: string
           created_at: string
           description: string | null
+          entity_id: string | null
           entity_type: string
           id: string
           user_id: string
@@ -27,6 +28,7 @@ export type Database = {
           action: string
           created_at?: string
           description?: string | null
+          entity_id?: string | null
           entity_type: string
           id?: string
           user_id: string
@@ -35,6 +37,7 @@ export type Database = {
           action?: string
           created_at?: string
           description?: string | null
+          entity_id?: string | null
           entity_type?: string
           id?: string
           user_id?: string

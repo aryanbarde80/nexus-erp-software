@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { logActivity } from "@/lib/activity";
+import { ActivityTimeline } from "@/components/nexus/ActivityTimeline";
 
 export const Route = createFileRoute("/_authenticated/projects")({
   component: Projects,
@@ -108,12 +110,24 @@ function Projects() {
     const next = current === "done" ? "todo" : "done";
     const { error } = await supabase.from("tasks").update({ status: next }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "task", entityId: id,
+        action: "status_changed", description: `Status set to ${next}`,
+      });
+    }
     qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
   };
 
   const setProjectStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("projects").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "project", entityId: id,
+        action: "status_changed", description: `Status set to ${status}`,
+      });
+    }
     toast.success(`Project ${status}`);
     qc.invalidateQueries({ queryKey: ["projects"] });
   };
@@ -121,6 +135,12 @@ function Projects() {
   const setTaskStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("tasks").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "task", entityId: id,
+        action: "status_changed", description: `Status set to ${status}`,
+      });
+    }
     qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
   };
 
@@ -192,7 +212,10 @@ function Projects() {
                       </TableCell>
                       <TableCell>{money(Number(p.budget))}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{p.start_date || "—"} → {p.end_date || "—"}</TableCell>
-                      <TableCell className="text-right"><RowDelete table="projects" id={p.id} invalidateKeys={[["projects"]]} /></TableCell>
+                      <TableCell className="flex justify-end gap-1">
+                        <ActivityTimeline entityType="project" entityId={p.id} title={p.name} />
+                        <RowDelete table="projects" id={p.id} invalidateKeys={[["projects"]]} />
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No projects yet.</TableCell></TableRow>
@@ -282,7 +305,10 @@ function Projects() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="text-right"><RowDelete table="tasks" id={t.id} invalidateKeys={[["tasks-with-project"]]} /></TableCell>
+                      <TableCell className="flex justify-end gap-1">
+                        <ActivityTimeline entityType="task" entityId={t.id} title={t.title} />
+                        <RowDelete table="tasks" id={t.id} invalidateKeys={[["tasks-with-project"]]} />
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">No tasks yet.</TableCell></TableRow>
