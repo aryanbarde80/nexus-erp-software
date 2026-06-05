@@ -110,6 +110,12 @@ function Sales() {
   const setInvoiceStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("invoices").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "invoice", entityId: id,
+        action: "status_changed", description: `Status set to ${status}`,
+      });
+    }
     toast.success(`Invoice marked ${status}`);
     qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
   };
@@ -125,6 +131,11 @@ function Sales() {
     });
     if (error) return toast.error(error.message);
     await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
+    await logActivity({
+      userId: user.id, entityType: "invoice", entityId: inv.id,
+      action: "payment_received",
+      description: `Payment of ${money(Number(inv.amount))} recorded via card`,
+    });
     toast.success("Payment recorded");
     qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
     qc.invalidateQueries({ queryKey: ["payments-with-invoice"] });
