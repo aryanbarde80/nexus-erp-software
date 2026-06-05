@@ -23,6 +23,8 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Link } from "@tanstack/react-router";
 import { CreditCard, ExternalLink } from "lucide-react";
+import { logActivity } from "@/lib/activity";
+import { ActivityTimeline } from "@/components/nexus/ActivityTimeline";
 
 export const Route = createFileRoute("/_authenticated/sales")({
   component: Sales,
