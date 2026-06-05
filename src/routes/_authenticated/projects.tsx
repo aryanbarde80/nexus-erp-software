@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { logActivity } from "@/lib/activity";
+import { ActivityTimeline } from "@/components/nexus/ActivityTimeline";
 
 export const Route = createFileRoute("/_authenticated/projects")({
   component: Projects,
