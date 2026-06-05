@@ -16,10 +16,13 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Link } from "@tanstack/react-router";
+import { CreditCard, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sales")({
   component: Sales,
@@ -102,6 +105,29 @@ function Sales() {
     toast.success("Invoice created");
     setINumber(""); setICustomer(""); setIAmount(""); setIDue("");
     qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
+  };
+
+  const setInvoiceStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("invoices").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`Invoice marked ${status}`);
+    qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
+  };
+
+  const recordPayment = async (inv: any) => {
+    if (!user) return;
+    const { error } = await supabase.from("payments").insert({
+      user_id: user.id,
+      invoice_id: inv.id,
+      amount: Number(inv.amount),
+      method: "card",
+      reference: `Auto-${inv.invoice_number}`,
+    });
+    if (error) return toast.error(error.message);
+    await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
+    toast.success("Payment recorded");
+    qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
+    qc.invalidateQueries({ queryKey: ["payments-with-invoice"] });
   };
 
   return (
@@ -223,11 +249,27 @@ function Sales() {
                       <TableCell>{money(Number(i.amount))}</TableCell>
                       <TableCell className="text-muted-foreground">{i.due_date || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant={i.status === "paid" ? "default" : i.status === "overdue" ? "destructive" : "secondary"}>
-                          {i.status}
-                        </Badge>
+                        <Select value={i.status} onValueChange={(v) => setInvoiceStatus(i.id, v)}>
+                          <SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="sent">Sent</SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="overdue">Overdue</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="text-right"><RowDelete table="invoices" id={i.id} invalidateKeys={[["invoices-with-customer"], ["invoices"]]} /></TableCell>
+                      <TableCell className="flex justify-end gap-1">
+                        <Button asChild size="icon" variant="ghost" className="h-8 w-8" title="Open invoice">
+                          <Link to="/store/invoice/$id" params={{ id: i.id }}><ExternalLink className="h-4 w-4" /></Link>
+                        </Button>
+                        {i.status !== "paid" && (
+                          <Button size="sm" variant="outline" onClick={() => recordPayment(i)}>
+                            <CreditCard className="mr-1 h-3.5 w-3.5" /> Pay
+                          </Button>
+                        )}
+                        <RowDelete table="invoices" id={i.id} invalidateKeys={[["invoices-with-customer"], ["invoices"]]} />
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No invoices yet.</TableCell></TableRow>

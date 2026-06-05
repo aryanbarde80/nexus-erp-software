@@ -111,6 +111,19 @@ function Projects() {
     qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
   };
 
+  const setProjectStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("projects").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`Project ${status}`);
+    qc.invalidateQueries({ queryKey: ["projects"] });
+  };
+
+  const setTaskStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("tasks").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
+  };
+
   return (
     <div>
       <PageHeader title="Projects" subtitle="Track work, deliverables and tasks." />
@@ -165,7 +178,18 @@ function Projects() {
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell className="text-muted-foreground">{p.client || "—"}</TableCell>
-                      <TableCell><Badge variant={STATUS_COLORS[p.status] || "secondary"}>{p.status}</Badge></TableCell>
+                      <TableCell>
+                        <Select value={p.status} onValueChange={(v) => setProjectStatus(p.id, v)}>
+                          <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="planning">Planning</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="on_hold">On hold</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
                       <TableCell>{money(Number(p.budget))}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{p.start_date || "—"} → {p.end_date || "—"}</TableCell>
                       <TableCell className="text-right"><RowDelete table="projects" id={p.id} invalidateKeys={[["projects"]]} /></TableCell>
@@ -248,7 +272,16 @@ function Projects() {
                         <Badge variant={t.priority === "urgent" || t.priority === "high" ? "destructive" : "secondary"}>{t.priority}</Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{t.due_date || "—"}</TableCell>
-                      <TableCell><Badge variant={t.status === "done" ? "default" : "outline"}>{t.status}</Badge></TableCell>
+                      <TableCell>
+                        <Select value={t.status} onValueChange={(v) => setTaskStatus(t.id, v)}>
+                          <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todo">To do</SelectItem>
+                            <SelectItem value="in_progress">In progress</SelectItem>
+                            <SelectItem value="done">Done</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
                       <TableCell className="text-right"><RowDelete table="tasks" id={t.id} invalidateKeys={[["tasks-with-project"]]} /></TableCell>
                     </TableRow>
                   )) : (
