@@ -212,7 +212,10 @@ function Projects() {
                       </TableCell>
                       <TableCell>{money(Number(p.budget))}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{p.start_date || "—"} → {p.end_date || "—"}</TableCell>
-                      <TableCell className="text-right"><RowDelete table="projects" id={p.id} invalidateKeys={[["projects"]]} /></TableCell>
+                      <TableCell className="flex justify-end gap-1">
+                        <ActivityTimeline entityType="project" entityId={p.id} title={p.name} />
+                        <RowDelete table="projects" id={p.id} invalidateKeys={[["projects"]]} />
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No projects yet.</TableCell></TableRow>
