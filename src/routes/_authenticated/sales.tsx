@@ -276,6 +276,7 @@ function Sales() {
                         <Button asChild size="icon" variant="ghost" className="h-8 w-8" title="Open invoice">
                           <Link to="/store/invoice/$id" params={{ id: i.id }}><ExternalLink className="h-4 w-4" /></Link>
                         </Button>
+                        <ActivityTimeline entityType="invoice" entityId={i.id} title={`Invoice ${i.invoice_number}`} />
                         {i.status !== "paid" && (
                           <Button size="sm" variant="outline" onClick={() => recordPayment(i)}>
                             <CreditCard className="mr-1 h-3.5 w-3.5" /> Pay
