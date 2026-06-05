@@ -272,7 +272,16 @@ function Projects() {
                         <Badge variant={t.priority === "urgent" || t.priority === "high" ? "destructive" : "secondary"}>{t.priority}</Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{t.due_date || "—"}</TableCell>
-                      <TableCell><Badge variant={t.status === "done" ? "default" : "outline"}>{t.status}</Badge></TableCell>
+                      <TableCell>
+                        <Select value={t.status} onValueChange={(v) => setTaskStatus(t.id, v)}>
+                          <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todo">To do</SelectItem>
+                            <SelectItem value="in_progress">In progress</SelectItem>
+                            <SelectItem value="done">Done</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
                       <TableCell className="text-right"><RowDelete table="tasks" id={t.id} invalidateKeys={[["tasks-with-project"]]} /></TableCell>
                     </TableRow>
                   )) : (
