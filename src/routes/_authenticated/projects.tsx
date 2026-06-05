@@ -110,6 +110,12 @@ function Projects() {
     const next = current === "done" ? "todo" : "done";
     const { error } = await supabase.from("tasks").update({ status: next }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "task", entityId: id,
+        action: "status_changed", description: `Status set to ${next}`,
+      });
+    }
     qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
   };
 
