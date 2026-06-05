@@ -249,11 +249,27 @@ function Sales() {
                       <TableCell>{money(Number(i.amount))}</TableCell>
                       <TableCell className="text-muted-foreground">{i.due_date || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant={i.status === "paid" ? "default" : i.status === "overdue" ? "destructive" : "secondary"}>
-                          {i.status}
-                        </Badge>
+                        <Select value={i.status} onValueChange={(v) => setInvoiceStatus(i.id, v)}>
+                          <SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="sent">Sent</SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="overdue">Overdue</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
-                      <TableCell className="text-right"><RowDelete table="invoices" id={i.id} invalidateKeys={[["invoices-with-customer"], ["invoices"]]} /></TableCell>
+                      <TableCell className="flex justify-end gap-1">
+                        <Button asChild size="icon" variant="ghost" className="h-8 w-8" title="Open invoice">
+                          <Link to="/store/invoice/$id" params={{ id: i.id }}><ExternalLink className="h-4 w-4" /></Link>
+                        </Button>
+                        {i.status !== "paid" && (
+                          <Button size="sm" variant="outline" onClick={() => recordPayment(i)}>
+                            <CreditCard className="mr-1 h-3.5 w-3.5" /> Pay
+                          </Button>
+                        )}
+                        <RowDelete table="invoices" id={i.id} invalidateKeys={[["invoices-with-customer"], ["invoices"]]} />
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No invoices yet.</TableCell></TableRow>
