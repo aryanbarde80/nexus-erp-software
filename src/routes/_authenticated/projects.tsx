@@ -178,7 +178,18 @@ function Projects() {
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell className="text-muted-foreground">{p.client || "—"}</TableCell>
-                      <TableCell><Badge variant={STATUS_COLORS[p.status] || "secondary"}>{p.status}</Badge></TableCell>
+                      <TableCell>
+                        <Select value={p.status} onValueChange={(v) => setProjectStatus(p.id, v)}>
+                          <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="planning">Planning</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="on_hold">On hold</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
                       <TableCell>{money(Number(p.budget))}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{p.start_date || "—"} → {p.end_date || "—"}</TableCell>
                       <TableCell className="text-right"><RowDelete table="projects" id={p.id} invalidateKeys={[["projects"]]} /></TableCell>
