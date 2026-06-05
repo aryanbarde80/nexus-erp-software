@@ -111,6 +111,19 @@ function Projects() {
     qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
   };
 
+  const setProjectStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("projects").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`Project ${status}`);
+    qc.invalidateQueries({ queryKey: ["projects"] });
+  };
+
+  const setTaskStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("tasks").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
+  };
+
   return (
     <div>
       <PageHeader title="Projects" subtitle="Track work, deliverables and tasks." />
