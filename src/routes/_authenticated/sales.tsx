@@ -16,10 +16,13 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Link } from "@tanstack/react-router";
+import { CreditCard, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sales")({
   component: Sales,
