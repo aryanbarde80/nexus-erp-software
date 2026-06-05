@@ -305,7 +305,10 @@ function Projects() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="text-right"><RowDelete table="tasks" id={t.id} invalidateKeys={[["tasks-with-project"]]} /></TableCell>
+                      <TableCell className="flex justify-end gap-1">
+                        <ActivityTimeline entityType="task" entityId={t.id} title={t.title} />
+                        <RowDelete table="tasks" id={t.id} invalidateKeys={[["tasks-with-project"]]} />
+                      </TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">No tasks yet.</TableCell></TableRow>
