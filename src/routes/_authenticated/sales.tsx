@@ -107,6 +107,29 @@ function Sales() {
     qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
   };
 
+  const setInvoiceStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("invoices").update({ status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`Invoice marked ${status}`);
+    qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
+  };
+
+  const recordPayment = async (inv: any) => {
+    if (!user) return;
+    const { error } = await supabase.from("payments").insert({
+      user_id: user.id,
+      invoice_id: inv.id,
+      amount: Number(inv.amount),
+      method: "card",
+      reference: `Auto-${inv.invoice_number}`,
+    });
+    if (error) return toast.error(error.message);
+    await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
+    toast.success("Payment recorded");
+    qc.invalidateQueries({ queryKey: ["invoices-with-customer"] });
+    qc.invalidateQueries({ queryKey: ["payments-with-invoice"] });
+  };
+
   return (
     <div>
       <PageHeader title="Sales & CRM" subtitle="Manage customers and invoices." />
