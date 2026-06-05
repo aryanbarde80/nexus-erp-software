@@ -116,6 +116,12 @@ function Projects() {
   const setProjectStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("projects").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "project", entityId: id,
+        action: "status_changed", description: `Status set to ${status}`,
+      });
+    }
     toast.success(`Project ${status}`);
     qc.invalidateQueries({ queryKey: ["projects"] });
   };
@@ -123,6 +129,12 @@ function Projects() {
   const setTaskStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("tasks").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
+    if (user) {
+      await logActivity({
+        userId: user.id, entityType: "task", entityId: id,
+        action: "status_changed", description: `Status set to ${status}`,
+      });
+    }
     qc.invalidateQueries({ queryKey: ["tasks-with-project"] });
   };
 
