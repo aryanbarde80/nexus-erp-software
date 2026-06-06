@@ -21,6 +21,7 @@ import {
   Megaphone,
   Building2,
   ShoppingCart,
+  KanbanSquare,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,7 @@ const NAV = [
   { to: "/assets", label: "Assets", icon: HardDrive },
   { to: "/suppliers", label: "Suppliers & PO", icon: Truck },
   { to: "/projects", label: "Projects", icon: Briefcase },
+  { to: "/kanban", label: "Task Kanban", icon: KanbanSquare },
   { to: "/calendar", label: "Calendar", icon: Calendar },
   { to: "/finance", label: "Finance", icon: Wallet },
   { to: "/hr", label: "HR", icon: UserCog },

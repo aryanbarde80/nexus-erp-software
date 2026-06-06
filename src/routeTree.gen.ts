@@ -25,6 +25,7 @@ import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedLeavesRouteImport } from './routes/_authenticated/leaves'
+import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedHrRouteImport } from './routes/_authenticated/hr'
 import { Route as AuthenticatedFinanceRouteImport } from './routes/_authenticated/finance'
@@ -115,6 +116,11 @@ const AuthenticatedLeavesRoute = AuthenticatedLeavesRouteImport.update({
   path: '/leaves',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/finance': typeof AuthenticatedFinanceRoute
   '/hr': typeof AuthenticatedHrRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
   '/leaves': typeof AuthenticatedLeavesRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/finance': typeof AuthenticatedFinanceRoute
   '/hr': typeof AuthenticatedHrRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
   '/leaves': typeof AuthenticatedLeavesRoute
   '/orders': typeof AuthenticatedOrdersRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -238,6 +246,7 @@ export interface FileRoutesById {
   '/_authenticated/finance': typeof AuthenticatedFinanceRoute
   '/_authenticated/hr': typeof AuthenticatedHrRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
+  '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
   '/_authenticated/leaves': typeof AuthenticatedLeavesRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/finance'
     | '/hr'
     | '/inventory'
+    | '/kanban'
     | '/leaves'
     | '/orders'
     | '/payments'
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/finance'
     | '/hr'
     | '/inventory'
+    | '/kanban'
     | '/leaves'
     | '/orders'
     | '/payments'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/_authenticated/finance'
     | '/_authenticated/hr'
     | '/_authenticated/inventory'
+    | '/_authenticated/kanban'
     | '/_authenticated/leaves'
     | '/_authenticated/orders'
     | '/_authenticated/payments'
@@ -458,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeavesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kanban': {
+      id: '/_authenticated/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof AuthenticatedKanbanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/inventory': {
       id: '/_authenticated/inventory'
       path: '/inventory'
@@ -552,6 +571,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinanceRoute: typeof AuthenticatedFinanceRoute
   AuthenticatedHrRoute: typeof AuthenticatedHrRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
+  AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
   AuthenticatedLeavesRoute: typeof AuthenticatedLeavesRoute
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
@@ -576,6 +596,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinanceRoute: AuthenticatedFinanceRoute,
   AuthenticatedHrRoute: AuthenticatedHrRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
+  AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
   AuthenticatedLeavesRoute: AuthenticatedLeavesRoute,
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
