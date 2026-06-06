@@ -22,6 +22,8 @@ import {
   Building2,
   ShoppingCart,
   KanbanSquare,
+  Bot,
+  Activity,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
