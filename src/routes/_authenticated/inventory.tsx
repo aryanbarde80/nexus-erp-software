@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { exportCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/inventory")({
   component: Inventory,
@@ -67,21 +69,34 @@ function Inventory() {
       <PageHeader
         title="Inventory" subtitle="Products, stock levels and low-stock alerts."
         actions={
-          <CreateDialog title="New product" triggerLabel="Add product" busy={busy} onSubmit={add}>
-            <Field label="Name"><Input required value={name} onChange={(e) => setName(e.target.value)} /></Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="SKU"><Input value={sku} onChange={(e) => setSku(e.target.value)} /></Field>
-              <Field label="Category"><Input value={category} onChange={(e) => setCategory(e.target.value)} /></Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Price"><Input type="number" step="0.01" required value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
-              <Field label="Cost"><Input type="number" step="0.01" value={cost} onChange={(e) => setCost(e.target.value)} /></Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Stock"><Input type="number" required value={stock} onChange={(e) => setStock(e.target.value)} /></Field>
-              <Field label="Low stock threshold"><Input type="number" value={low} onChange={(e) => setLow(e.target.value)} /></Field>
-            </div>
-          </CreateDialog>
+          <div className="flex gap-2">
+            <Button
+              variant="outline" size="sm"
+              onClick={() => exportCsv("inventory.csv", (productsQ.data ?? []).map((p: any) => ({
+                name: p.name, sku: p.sku, category: p.category,
+                price: p.price, cost: p.cost, stock: p.stock,
+                low_stock_threshold: p.low_stock_threshold,
+              })))}
+              disabled={!productsQ.data?.length}
+            >
+              <Download className="mr-1.5 h-4 w-4" /> Export CSV
+            </Button>
+            <CreateDialog title="New product" triggerLabel="Add product" busy={busy} onSubmit={add}>
+              <Field label="Name"><Input required value={name} onChange={(e) => setName(e.target.value)} /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="SKU"><Input value={sku} onChange={(e) => setSku(e.target.value)} /></Field>
+                <Field label="Category"><Input value={category} onChange={(e) => setCategory(e.target.value)} /></Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Price"><Input type="number" step="0.01" required value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
+                <Field label="Cost"><Input type="number" step="0.01" value={cost} onChange={(e) => setCost(e.target.value)} /></Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Stock"><Input type="number" required value={stock} onChange={(e) => setStock(e.target.value)} /></Field>
+                <Field label="Low stock threshold"><Input type="number" value={low} onChange={(e) => setLow(e.target.value)} /></Field>
+              </div>
+            </CreateDialog>
+          </div>
         }
       />
       <div className="mb-4">

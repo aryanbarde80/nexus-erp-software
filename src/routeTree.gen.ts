@@ -33,8 +33,10 @@ import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
+import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedStoreInvoiceIdRouteImport } from './routes/_authenticated/store.invoice.$id'
 
 const SignupRoute = SignupRouteImport.update({
@@ -157,6 +159,11 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAssetsRoute = AuthenticatedAssetsRouteImport.update({
   id: '/assets',
   path: '/assets',
@@ -168,6 +175,11 @@ const AuthenticatedAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedStoreInvoiceIdRoute =
   AuthenticatedStoreInvoiceIdRouteImport.update({
     id: '/invoice/$id',
@@ -179,8 +191,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/assets': typeof AuthenticatedAssetsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -207,8 +221,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/assets': typeof AuthenticatedAssetsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -237,8 +253,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/assets': typeof AuthenticatedAssetsRoute
+  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -267,8 +285,10 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/activity'
     | '/announcements'
     | '/assets'
+    | '/assistant'
     | '/calendar'
     | '/contracts'
     | '/dashboard'
@@ -295,8 +315,10 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
+    | '/activity'
     | '/announcements'
     | '/assets'
+    | '/assistant'
     | '/calendar'
     | '/contracts'
     | '/dashboard'
@@ -324,8 +346,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/signup'
+    | '/_authenticated/activity'
     | '/_authenticated/announcements'
     | '/_authenticated/assets'
+    | '/_authenticated/assistant'
     | '/_authenticated/calendar'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
@@ -526,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/assistant': {
+      id: '/_authenticated/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/assets': {
       id: '/_authenticated/assets'
       path: '/assets'
@@ -538,6 +569,13 @@ declare module '@tanstack/react-router' {
       path: '/announcements'
       fullPath: '/announcements'
       preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/activity': {
+      id: '/_authenticated/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/store/invoice/$id': {
@@ -562,8 +600,10 @@ const AuthenticatedStoreRouteWithChildren =
   AuthenticatedStoreRoute._addFileChildren(AuthenticatedStoreRouteChildren)
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -587,8 +627,10 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAssetsRoute: AuthenticatedAssetsRoute,
+  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
