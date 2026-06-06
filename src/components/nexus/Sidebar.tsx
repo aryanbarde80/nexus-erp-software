@@ -31,6 +31,8 @@ import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/assistant", label: "AI Assistant", icon: Bot },
+  { to: "/activity", label: "Activity feed", icon: Activity },
   { to: "/sales", label: "Sales & CRM", icon: Users },
   { to: "/store", label: "Store", icon: ShoppingCart },
   { to: "/orders", label: "Orders", icon: Package },
