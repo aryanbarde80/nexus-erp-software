@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { KanbanSquare, Plus, ChevronLeft, ChevronRight, Trash2, Flag } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Trash2, Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/nexus/PageHeader";
@@ -119,9 +119,8 @@ function KanbanPage() {
     <div>
       <PageHeader
         title="Task Kanban"
-        subtitle="Drag work across stages — to do, in progress, done."
-        icon={KanbanSquare}
-        action={
+        subtitle="Move work across stages — to do, in progress, done."
+        actions={
           <div className="flex items-center gap-2">
             <Select value={filterProject} onValueChange={setFilterProject}>
               <SelectTrigger className="h-9 w-48"><SelectValue placeholder="All projects" /></SelectTrigger>
