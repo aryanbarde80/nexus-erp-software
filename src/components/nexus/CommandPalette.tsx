@@ -9,7 +9,7 @@ import {
   ShoppingCart, Sparkles, KanbanSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { runDemoSeed } from "@/lib/seed-demo";
+import { seedDemoData } from "@/lib/seed-demo";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
@@ -89,7 +89,7 @@ export function CommandPaletteButton() {
                 setOpen(false);
                 const t = toast.loading("Seeding demo data…");
                 try {
-                  await runDemoSeed(user.id);
+                  await seedDemoData(user.id);
                   toast.success("Demo data loaded", { id: t });
                 } catch (e: any) {
                   toast.error(e.message ?? "Seed failed", { id: t });
