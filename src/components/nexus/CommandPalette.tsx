@@ -6,7 +6,7 @@ import {
 import {
   LayoutDashboard, Users, Package, Wallet, UserCog, Briefcase, Truck, BarChart3, Settings, FileText,
   CreditCard, Calendar, CalendarOff, Boxes, HardDrive, LifeBuoy, FileSignature, Megaphone, Building2,
-  ShoppingCart, Sparkles, KanbanSquare, Bot, Activity,
+  ShoppingCart, Sparkles, KanbanSquare, Bot, Activity, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { seedDemoData } from "@/lib/seed-demo";
