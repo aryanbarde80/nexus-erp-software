@@ -113,6 +113,8 @@ function Dashboard() {
         }
       />
 
+      <div className="mb-6"><DailyBriefing /></div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Revenue (paid)" value={money(revenue)} delta="All-time" icon={TrendingUp} tone="success" />
         <StatCard label="Outstanding" value={money(outstanding)} delta="Unpaid invoices" icon={Wallet} tone="warning" />
