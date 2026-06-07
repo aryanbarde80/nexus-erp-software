@@ -176,3 +176,27 @@ function Tickets() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label>{label}</Label>{children}</div>;
 }
+
+function AutoPrioritize() {
+  const qc = useQueryClient();
+  const fn = useServerFn(autoPrioritizeTickets);
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    const t = toast.loading("AI is triaging your tickets…");
+    try {
+      const res = await fn({});
+      toast.success(`Updated ${res.updated} ticket${res.updated === 1 ? "" : "s"}`, { id: t });
+      qc.invalidateQueries({ queryKey: ["tickets-with-customer"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Triage failed", { id: t });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Button variant="outline" size="sm" onClick={run} disabled={busy}>
+      <Wand2 className="mr-2 h-3.5 w-3.5" /> {busy ? "Triaging…" : "AI auto-prioritize"}
+    </Button>
+  );
+}
