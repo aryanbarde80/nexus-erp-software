@@ -15,6 +15,7 @@ import { StatCard } from "@/components/nexus/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DailyBriefing } from "@/components/nexus/DailyBriefing";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
