@@ -120,7 +120,8 @@ function Tickets() {
             </Field>
             <Field label="Assignee"><Input value={assignee} onChange={(e) => setAssignee(e.target.value)} /></Field>
           </div>
-        </CreateDialog>
+          </CreateDialog>
+        </div>
       </div>
 
       <Card className="border-border/60 shadow-soft">
