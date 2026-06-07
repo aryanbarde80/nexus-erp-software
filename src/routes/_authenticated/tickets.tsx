@@ -96,7 +96,6 @@ function Tickets() {
         <div className="flex items-center gap-2">
           <AutoPrioritize />
           <CreateDialog title="New ticket" triggerLabel="Add ticket" busy={busy} onSubmit={add}>
-        <CreateDialog title="New ticket" triggerLabel="Add ticket" busy={busy} onSubmit={add}>
           <Field label="Subject"><Input required value={subject} onChange={(e) => setSubject(e.target.value)} /></Field>
           <Field label="Description"><Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
           <Field label="Customer">
