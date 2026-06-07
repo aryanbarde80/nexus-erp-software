@@ -24,6 +24,7 @@ import {
   KanbanSquare,
   Bot,
   Activity,
+  Brain,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
