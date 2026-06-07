@@ -15,6 +15,7 @@ import { StatCard } from "@/components/nexus/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DailyBriefing } from "@/components/nexus/DailyBriefing";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -111,6 +112,8 @@ function Dashboard() {
           </Button>
         }
       />
+
+      <div className="mb-6"><DailyBriefing /></div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Revenue (paid)" value={money(revenue)} delta="All-time" icon={TrendingUp} tone="success" />

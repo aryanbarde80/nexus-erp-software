@@ -244,3 +244,88 @@ export const classifyExpense = createServerFn({ method: "POST" })
     ], { json: true });
     try { return JSON.parse(raw); } catch { return { category: "Other", confidence: 0.3 }; }
   });
+
+// ---------- 8. Daily briefing (1-paragraph executive update) ----------
+export const dailyBriefing = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    const [inv, pay, exp, tk, lv, tasks] = await Promise.all([
+      supabase.from("invoices").select("amount,status,issue_date").gte("issue_date", since.slice(0, 10)),
+      supabase.from("payments").select("amount,payment_date").gte("payment_date", since.slice(0, 10)),
+      supabase.from("expenses").select("amount,category,date").gte("date", since.slice(0, 10)),
+      supabase.from("tickets").select("priority,status,created_at").gte("created_at", since),
+      supabase.from("leave_requests").select("status,start_date").gte("start_date", since.slice(0, 10)),
+      supabase.from("tasks").select("status,due_date").lte("due_date", new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)),
+    ]);
+    const stats = {
+      week_revenue: (pay.data ?? []).reduce((s, p) => s + Number(p.amount), 0),
+      week_invoices: inv.data?.length ?? 0,
+      week_expenses: (exp.data ?? []).reduce((s, e) => s + Number(e.amount), 0),
+      new_tickets: tk.data?.length ?? 0,
+      urgent_tickets: (tk.data ?? []).filter(t => t.priority === "urgent" && t.status !== "closed").length,
+      pending_leaves: (lv.data ?? []).filter(l => l.status === "pending").length,
+      tasks_due_soon: (tasks.data ?? []).filter(t => t.status !== "done").length,
+    };
+    const raw = await callAI([
+      { role: "system", content: "You are the CEO's morning briefing. Output JSON: {\"greeting\":\"<=10 words\",\"summary\":\"<=40 words, plain prose, mention USD where useful\",\"priorities\":[\"<=10 words\",\"...\",\"...\"]} — exactly 3 priorities." },
+      { role: "user", content: `Last 7 days: ${JSON.stringify(stats)}. Date: ${new Date().toDateString()}.` },
+    ], { json: true });
+    try { return { ...JSON.parse(raw), stats }; }
+    catch { return { greeting: "Good day.", summary: "Briefing unavailable.", priorities: [], stats }; }
+  });
+
+// ---------- 9. Draft a ticket reply ----------
+const draftSchema = z.object({
+  subject: z.string().min(1).max(500),
+  description: z.string().max(4000).optional().nullable(),
+  customer: z.string().max(200).optional().nullable(),
+  tone: z.enum(["empathetic", "professional", "concise"]).optional(),
+});
+export const draftTicketReply = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => draftSchema.parse(d))
+  .handler(async ({ data }) => {
+    const tone = data.tone ?? "empathetic";
+    const reply = await callAI([
+      { role: "system", content: `You are a senior customer-success agent. Draft a ${tone}, well-structured email reply (3-6 sentences). Include a brief acknowledgement, the resolution or next step, and a polite sign-off as "The Nexus Support Team". Do not invent facts; if info is missing, ask one clarifying question. Plain text, no markdown.` },
+      { role: "user", content: `Customer: ${data.customer ?? "Customer"}\nSubject: ${data.subject}\nDescription: ${data.description ?? "(none provided)"}` },
+    ]);
+    // Sentiment & suggested status
+    let meta: any = { sentiment: "neutral", suggested_status: "in_progress" };
+    try {
+      const m = await callAI([
+        { role: "system", content: "Output JSON: {\"sentiment\":\"positive|neutral|negative|frustrated\",\"suggested_status\":\"open|in_progress|resolved\",\"suggested_priority\":\"low|medium|high|urgent\"}." },
+        { role: "user", content: `Subject: ${data.subject}\n${data.description ?? ""}` },
+      ], { json: true });
+      meta = JSON.parse(m);
+    } catch {}
+    return { reply, ...meta };
+  });
+
+// ---------- 10. Auto-prioritize tickets in bulk ----------
+export const autoPrioritizeTickets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const { data: tickets } = await supabase
+      .from("tickets").select("id,subject,description,priority,status").neq("status", "closed").limit(50);
+    if (!tickets?.length) return { updated: 0 };
+    const raw = await callAI([
+      { role: "system", content: "Triage support tickets. Return JSON {\"items\":[{\"id\":\"...\",\"priority\":\"low|medium|high|urgent\"}]}. Use 'urgent' only when there is clear business impact (outage, billing block, security)." },
+      { role: "user", content: JSON.stringify(tickets.map(t => ({ id: t.id, subject: t.subject, description: (t.description ?? "").slice(0, 400) }))) },
+    ], { json: true });
+    let updated = 0;
+    try {
+      const parsed = JSON.parse(raw);
+      for (const item of parsed.items ?? []) {
+        const cur = tickets.find(t => t.id === item.id);
+        if (cur && item.priority && item.priority !== cur.priority) {
+          await supabase.from("tickets").update({ priority: item.priority }).eq("id", item.id);
+          updated++;
+        }
+      }
+    } catch {}
+    return { updated };
+  });

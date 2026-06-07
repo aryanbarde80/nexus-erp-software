@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,14 +9,17 @@ import { PageHeader } from "@/components/nexus/PageHeader";
 import { CreateDialog } from "@/components/nexus/CreateDialog";
 import { RowDelete } from "@/components/nexus/RowDelete";
 import { StatCard } from "@/components/nexus/StatCard";
+import { SmartReplyButton } from "@/components/nexus/SmartReply";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LifeBuoy, AlertCircle, CheckCircle2 } from "lucide-react";
+import { LifeBuoy, AlertCircle, CheckCircle2, Wand2 } from "lucide-react";
+import { autoPrioritizeTickets } from "@/lib/ml.functions";
 
 export const Route = createFileRoute("/_authenticated/tickets")({ component: Tickets });
 
@@ -89,7 +93,9 @@ function Tickets() {
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <Input placeholder="Search tickets…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
-        <CreateDialog title="New ticket" triggerLabel="Add ticket" busy={busy} onSubmit={add}>
+        <div className="flex items-center gap-2">
+          <AutoPrioritize />
+          <CreateDialog title="New ticket" triggerLabel="Add ticket" busy={busy} onSubmit={add}>
           <Field label="Subject"><Input required value={subject} onChange={(e) => setSubject(e.target.value)} /></Field>
           <Field label="Description"><Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
           <Field label="Customer">
@@ -114,7 +120,8 @@ function Tickets() {
             </Field>
             <Field label="Assignee"><Input value={assignee} onChange={(e) => setAssignee(e.target.value)} /></Field>
           </div>
-        </CreateDialog>
+          </CreateDialog>
+        </div>
       </div>
 
       <Card className="border-border/60 shadow-soft">
@@ -151,6 +158,7 @@ function Tickets() {
                     </Select>
                   </TableCell>
                   <TableCell className="text-right">
+                    <SmartReplyButton ticket={t} />
                     <RowDelete table="tickets" id={t.id} invalidateKeys={[["tickets-with-customer"]]} />
                   </TableCell>
                 </TableRow>
@@ -167,4 +175,28 @@ function Tickets() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label>{label}</Label>{children}</div>;
+}
+
+function AutoPrioritize() {
+  const qc = useQueryClient();
+  const fn = useServerFn(autoPrioritizeTickets);
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    const t = toast.loading("AI is triaging your tickets…");
+    try {
+      const res = await fn({});
+      toast.success(`Updated ${res.updated} ticket${res.updated === 1 ? "" : "s"}`, { id: t });
+      qc.invalidateQueries({ queryKey: ["tickets-with-customer"] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Triage failed", { id: t });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Button variant="outline" size="sm" onClick={run} disabled={busy}>
+      <Wand2 className="mr-2 h-3.5 w-3.5" /> {busy ? "Triaging…" : "AI auto-prioritize"}
+    </Button>
+  );
 }
