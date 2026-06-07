@@ -158,6 +158,7 @@ function Tickets() {
                     </Select>
                   </TableCell>
                   <TableCell className="text-right">
+                    <SmartReplyButton ticket={t} />
                     <RowDelete table="tickets" id={t.id} invalidateKeys={[["tickets-with-customer"]]} />
                   </TableCell>
                 </TableRow>
