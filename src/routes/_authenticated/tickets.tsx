@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -18,8 +18,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LifeBuoy, AlertCircle, CheckCircle2, Wand2 } from "lucide-react";
-import { autoPrioritizeTickets } from "@/lib/ml.functions";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { LifeBuoy, AlertCircle, CheckCircle2, Wand2, Timer, History } from "lucide-react";
+import { autoPrioritizeTickets, predictTicketSla } from "@/lib/ml.functions";
 
 export const Route = createFileRoute("/_authenticated/tickets")({ component: Tickets });
 
@@ -37,13 +38,54 @@ function Tickets() {
     queryKey: ["tickets-with-customer"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tickets")
-        .select("*, customers(name)")
+        .from("tickets").select("*, customers(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  // Audit trail for auto_prioritize
+  const auditQ = useQuery({
+    queryKey: ["ticket-audit"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("activity_log")
+        .select("entity_id, description, created_at")
+        .eq("entity_type", "ticket")
+        .eq("action", "auto_prioritize")
+        .order("created_at", { ascending: false }).limit(200);
+      return data ?? [];
+    },
+  });
+  const auditByTicket = useMemo(() => {
+    const m = new Map<string, any[]>();
+    (auditQ.data ?? []).forEach((a: any) => {
+      const arr = m.get(a.entity_id) ?? [];
+      arr.push(a); m.set(a.entity_id, arr);
+    });
+    return m;
+  }, [auditQ.data]);
+
+  // SLA predictions for open tickets
+  const openTickets = useMemo(
+    () => (q.data ?? []).filter((t: any) => t.status !== "closed" && t.status !== "resolved"),
+    [q.data]
+  );
+  const slaFn = useServerFn(predictTicketSla);
+  const slaQ = useQuery({
+    queryKey: ["ticket-sla", openTickets.map((t: any) => t.id).join(",")],
+    enabled: openTickets.length > 0,
+    staleTime: 5 * 60 * 1000,
+    queryFn: () => slaFn({ data: { tickets: openTickets.slice(0, 50).map((t: any) => ({
+      id: t.id, subject: t.subject, description: t.description, priority: t.priority, created_at: t.created_at,
+    })) } }),
+  });
+  const slaByTicket = useMemo(() => {
+    const m = new Map<string, any>();
+    (slaQ.data?.predictions ?? []).forEach((p: any) => m.set(p.id, p));
+    return m;
+  }, [slaQ.data]);
 
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -55,12 +97,10 @@ function Tickets() {
     if (!user) return;
     setBusy(true);
     const { error } = await supabase.from("tickets").insert({
-      user_id: user.id,
-      subject,
+      user_id: user.id, subject,
       description: description || null,
       customer_id: customer || null,
-      priority,
-      assignee: assignee || null,
+      priority, assignee: assignee || null,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -83,6 +123,7 @@ function Tickets() {
   const urgent = (q.data ?? []).filter((t: any) => t.priority === "urgent" && t.status !== "closed").length;
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div>
       <PageHeader title="Support tickets" subtitle="Customer support and issue tracking." />
       <div className="mb-6 grid gap-4 md:grid-cols-3">
@@ -132,37 +173,92 @@ function Tickets() {
                 <TableHead>Subject</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Priority</TableHead>
-                <TableHead>Assignee</TableHead>
+                <TableHead>
+                  <span className="inline-flex items-center gap-1">
+                    <Timer className="h-3.5 w-3.5" /> AI SLA
+                    {slaQ.isFetching && <span className="text-[10px] text-muted-foreground">…</span>}
+                  </span>
+                </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length ? rows.map((t: any) => (
-                <TableRow key={t.id}>
-                  <TableCell className="font-medium">{t.subject}</TableCell>
-                  <TableCell className="text-muted-foreground">{t.customers?.name || "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant={t.priority === "urgent" ? "destructive" : t.priority === "high" ? "default" : "secondary"}>{t.priority}</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{t.assignee || "—"}</TableCell>
-                  <TableCell>
-                    <Select value={t.status} onValueChange={(v) => setStatus(t.id, v)}>
-                      <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="open">Open</SelectItem>
-                        <SelectItem value="in_progress">In progress</SelectItem>
-                        <SelectItem value="resolved">Resolved</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <SmartReplyButton ticket={t} />
-                    <RowDelete table="tickets" id={t.id} invalidateKeys={[["tickets-with-customer"]]} />
-                  </TableCell>
-                </TableRow>
-              )) : (
+              {rows.length ? rows.map((t: any) => {
+                const sla = slaByTicket.get(t.id);
+                const audit = auditByTicket.get(t.id) ?? [];
+                const riskCls =
+                  sla?.risk === "high" ? "border-destructive/40 text-destructive bg-destructive/10"
+                  : sla?.risk === "medium" ? "border-amber-500/40 text-amber-600 bg-amber-500/10"
+                  : "border-emerald-500/40 text-emerald-600 bg-emerald-500/10";
+                return (
+                  <TableRow key={t.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <span>{t.subject}</span>
+                        {audit.length > 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge variant="outline" className="cursor-help gap-1 border-primary/40 text-[10px] text-primary">
+                                <History className="h-2.5 w-2.5" /> {audit.length}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-sm">
+                              <p className="mb-1 text-xs font-semibold">AI auto-prioritize history</p>
+                              <ul className="space-y-1.5 text-xs">
+                                {audit.slice(0, 5).map((a: any, i: number) => (
+                                  <li key={i} className="border-l-2 border-primary/40 pl-2">
+                                    <p className="text-muted-foreground">{new Date(a.created_at).toLocaleString()}</p>
+                                    <p>{a.description}</p>
+                                  </li>
+                                ))}
+                              </ul>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{t.customers?.name || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant={t.priority === "urgent" ? "destructive" : t.priority === "high" ? "default" : "secondary"}>{t.priority}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {t.status === "closed" || t.status === "resolved" ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : sla ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className={`inline-flex cursor-help items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${riskCls}`}>
+                              <span className="font-semibold">~{sla.eta_hours}h</span>
+                              <span className="opacity-75">· {sla.risk}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-xs">{sla.reason}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{slaQ.isFetching ? "…" : "—"}</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Select value={t.status} onValueChange={(v) => setStatus(t.id, v)}>
+                        <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="in_progress">In progress</SelectItem>
+                          <SelectItem value="resolved">Resolved</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <SmartReplyButton ticket={t} />
+                      <RowDelete table="tickets" id={t.id} invalidateKeys={[["tickets-with-customer"]]} />
+                    </TableCell>
+                  </TableRow>
+                );
+              }) : (
                 <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No tickets yet.</TableCell></TableRow>
               )}
             </TableBody>
@@ -170,6 +266,7 @@ function Tickets() {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 }
 
@@ -186,8 +283,17 @@ function AutoPrioritize() {
     const t = toast.loading("AI is triaging your tickets…");
     try {
       const res = await fn({});
-      toast.success(`Updated ${res.updated} ticket${res.updated === 1 ? "" : "s"}`, { id: t });
+      if (res.updated === 0) {
+        toast.success("No changes — priorities already accurate", { id: t });
+      } else {
+        toast.success(
+          `Re-prioritized ${res.updated} ticket${res.updated === 1 ? "" : "s"} — see ticket history for AI reasoning`,
+          { id: t },
+        );
+      }
       qc.invalidateQueries({ queryKey: ["tickets-with-customer"] });
+      qc.invalidateQueries({ queryKey: ["ticket-audit"] });
+      qc.invalidateQueries({ queryKey: ["activity-feed"] });
     } catch (e: any) {
       toast.error(e.message ?? "Triage failed", { id: t });
     } finally {
