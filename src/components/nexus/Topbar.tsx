@@ -1,5 +1,6 @@
 import { CommandPaletteButton } from "./CommandPalette";
 import { NotificationsBell } from "./NotificationsBell";
+import { UserMenu } from "./UserMenu";
 
 export function Topbar() {
   return (
@@ -8,6 +9,7 @@ export function Topbar() {
         <CommandPaletteButton />
       </div>
       <NotificationsBell />
+      <UserMenu />
     </div>
   );
 }
