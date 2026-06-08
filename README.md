@@ -1,4 +1,4 @@
-# Nexus ERP Software
+# Nexus ERP Software 
 
 A modern Enterprise Resource Planning (ERP) platform designed to streamline business operations through a centralized and intuitive interface.
 
