@@ -125,6 +125,39 @@ export type Database = {
         }
         Relationships: []
       }
+      briefings: {
+        Row: {
+          created_at: string
+          greeting: string | null
+          id: string
+          priorities: Json | null
+          read: boolean
+          stats: Json | null
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          greeting?: string | null
+          id?: string
+          priorities?: Json | null
+          read?: boolean
+          stats?: Json | null
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          greeting?: string | null
+          id?: string
+          priorities?: Json | null
+          read?: boolean
+          stats?: Json | null
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           contract_type: string
@@ -682,6 +715,72 @@ export type Database = {
           updated_at?: string
           user_id?: string
           valid_until?: string | null
+        }
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          remind_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          remind_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          remind_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      smart_reply_feedback: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          id: string
+          rating: string
+          reply_text: string | null
+          ticket_id: string | null
+          tone: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          rating: string
+          reply_text?: string | null
+          ticket_id?: string | null
+          tone: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          rating?: string
+          reply_text?: string | null
+          ticket_id?: string | null
+          tone?: string
+          user_id?: string
         }
         Relationships: []
       }

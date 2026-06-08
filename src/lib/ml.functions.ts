@@ -276,23 +276,47 @@ export const dailyBriefing = createServerFn({ method: "POST" })
     catch { return { greeting: "Good day.", summary: "Briefing unavailable.", priorities: [], stats }; }
   });
 
-// ---------- 9. Draft a ticket reply ----------
+// ---------- 9. Draft a ticket reply (learns from feedback) ----------
 const draftSchema = z.object({
   subject: z.string().min(1).max(500),
   description: z.string().max(4000).optional().nullable(),
   customer: z.string().max(200).optional().nullable(),
+  customer_id: z.string().uuid().optional().nullable(),
   tone: z.enum(["empathetic", "professional", "concise"]).optional(),
 });
 export const draftTicketReply = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => draftSchema.parse(d))
-  .handler(async ({ data }) => {
-    const tone = data.tone ?? "empathetic";
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+
+    let learnedTone: string | null = null;
+    let learnedExamples: string[] = [];
+    try {
+      let q = supabase.from("smart_reply_feedback")
+        .select("tone,rating,reply_text,customer_id")
+        .eq("rating", "up")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (data.customer_id) q = q.or(`customer_id.eq.${data.customer_id},customer_id.is.null`);
+      const { data: fb } = await q;
+      if (fb?.length) {
+        const counts: Record<string, number> = {};
+        fb.forEach((f: any) => { counts[f.tone] = (counts[f.tone] ?? 0) + 1; });
+        learnedTone = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+        learnedExamples = fb.slice(0, 2).map((f: any) => (f.reply_text ?? "").slice(0, 300)).filter(Boolean);
+      }
+    } catch {}
+
+    const tone = data.tone ?? (learnedTone as any) ?? "empathetic";
+    const learningHint = learnedExamples.length
+      ? `\n\nThe user has previously approved replies in this style — match the structure, length and warmth:\n---\n${learnedExamples.join("\n---\n")}\n---`
+      : "";
+
     const reply = await callAI([
-      { role: "system", content: `You are a senior customer-success agent. Draft a ${tone}, well-structured email reply (3-6 sentences). Include a brief acknowledgement, the resolution or next step, and a polite sign-off as "The Nexus Support Team". Do not invent facts; if info is missing, ask one clarifying question. Plain text, no markdown.` },
+      { role: "system", content: `You are a senior customer-success agent. Draft a ${tone}, well-structured email reply (3-6 sentences). Include a brief acknowledgement, the resolution or next step, and a polite sign-off as "The Nexus Support Team". Do not invent facts; if info is missing, ask one clarifying question. Plain text, no markdown.${learningHint}` },
       { role: "user", content: `Customer: ${data.customer ?? "Customer"}\nSubject: ${data.subject}\nDescription: ${data.description ?? "(none provided)"}` },
     ]);
-    // Sentiment & suggested status
     let meta: any = { sentiment: "neutral", suggested_status: "in_progress" };
     try {
       const m = await callAI([
@@ -301,31 +325,66 @@ export const draftTicketReply = createServerFn({ method: "POST" })
       ], { json: true });
       meta = JSON.parse(m);
     } catch {}
-    return { reply, ...meta };
+    return { reply, tone, learned_tone: learnedTone, ...meta };
   });
 
-// ---------- 10. Auto-prioritize tickets in bulk ----------
+// ---------- 10. Auto-prioritize tickets in bulk (with audit trail) ----------
 export const autoPrioritizeTickets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const { data: tickets } = await supabase
       .from("tickets").select("id,subject,description,priority,status").neq("status", "closed").limit(50);
-    if (!tickets?.length) return { updated: 0 };
+    if (!tickets?.length) return { updated: 0, changes: [] };
     const raw = await callAI([
-      { role: "system", content: "Triage support tickets. Return JSON {\"items\":[{\"id\":\"...\",\"priority\":\"low|medium|high|urgent\"}]}. Use 'urgent' only when there is clear business impact (outage, billing block, security)." },
+      { role: "system", content: "Triage support tickets. Return JSON {\"items\":[{\"id\":\"...\",\"priority\":\"low|medium|high|urgent\",\"reason\":\"<=20 words\"}]}. Use 'urgent' only when there is clear business impact (outage, billing block, security)." },
       { role: "user", content: JSON.stringify(tickets.map(t => ({ id: t.id, subject: t.subject, description: (t.description ?? "").slice(0, 400) }))) },
     ], { json: true });
     let updated = 0;
+    const changes: any[] = [];
     try {
       const parsed = JSON.parse(raw);
       for (const item of parsed.items ?? []) {
         const cur = tickets.find(t => t.id === item.id);
         if (cur && item.priority && item.priority !== cur.priority) {
           await supabase.from("tickets").update({ priority: item.priority }).eq("id", item.id);
+          await supabase.from("activity_log").insert({
+            user_id: userId,
+            entity_type: "ticket",
+            entity_id: cur.id,
+            action: "auto_prioritize",
+            description: `AI re-prioritized "${cur.subject}": ${cur.priority} → ${item.priority}. Reason: ${item.reason ?? "n/a"}`,
+          });
+          changes.push({ id: cur.id, subject: cur.subject, from: cur.priority, to: item.priority, reason: item.reason });
           updated++;
         }
       }
     } catch {}
-    return { updated };
+    return { updated, changes };
+  });
+
+// ---------- 11. SLA prediction (bulk for open tickets) ----------
+const slaSchema = z.object({
+  id: z.string().uuid(),
+  subject: z.string().max(500),
+  description: z.string().max(4000).optional().nullable(),
+  priority: z.string().max(20).optional().nullable(),
+  created_at: z.string(),
+});
+export const predictTicketSla = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ tickets: z.array(slaSchema).max(50) }).parse(d))
+  .handler(async ({ data }) => {
+    if (!data.tickets.length) return { predictions: [] };
+    const now = Date.now();
+    const enriched = data.tickets.map(t => ({
+      ...t,
+      age_hours: Math.round((now - new Date(t.created_at).getTime()) / 3600000),
+    }));
+    const raw = await callAI([
+      { role: "system", content: "You are a support-ops forecaster. For each ticket estimate ETA to resolution (eta_hours integer) and risk of breaching a 24h SLA as low|medium|high. Consider priority, age, complexity. Return JSON {\"items\":[{\"id\":\"...\",\"eta_hours\":number,\"risk\":\"low|medium|high\",\"reason\":\"<=15 words\"}]}." },
+      { role: "user", content: JSON.stringify(enriched.map(t => ({ id: t.id, subject: t.subject, description: (t.description ?? "").slice(0, 300), priority: t.priority, age_hours: t.age_hours }))) },
+    ], { json: true });
+    try { return { predictions: JSON.parse(raw).items ?? [] }; }
+    catch { return { predictions: [] }; }
   });

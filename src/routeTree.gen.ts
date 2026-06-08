@@ -38,6 +38,7 @@ import { Route as AuthenticatedAssistantRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as ApiPublicHooksDailyBriefingRouteImport } from './routes/api/public/hooks/daily-briefing'
 import { Route as AuthenticatedStoreInvoiceIdRouteImport } from './routes/_authenticated/store.invoice.$id'
 
 const SignupRoute = SignupRouteImport.update({
@@ -187,6 +188,12 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicHooksDailyBriefingRoute =
+  ApiPublicHooksDailyBriefingRouteImport.update({
+    id: '/api/public/hooks/daily-briefing',
+    path: '/api/public/hooks/daily-briefing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedStoreInvoiceIdRoute =
   AuthenticatedStoreInvoiceIdRouteImport.update({
     id: '/invoice/$id',
@@ -224,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/tickets': typeof AuthenticatedTicketsRoute
   '/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
+  '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -255,6 +263,7 @@ export interface FileRoutesByTo {
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/tickets': typeof AuthenticatedTicketsRoute
   '/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
+  '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -288,6 +297,7 @@ export interface FileRoutesById {
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/tickets': typeof AuthenticatedTicketsRoute
   '/_authenticated/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
+  '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/suppliers'
     | '/tickets'
     | '/store/invoice/$id'
+    | '/api/public/hooks/daily-briefing'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -352,6 +363,7 @@ export interface FileRouteTypes {
     | '/suppliers'
     | '/tickets'
     | '/store/invoice/$id'
+    | '/api/public/hooks/daily-briefing'
   id:
     | '__root__'
     | '/'
@@ -384,6 +396,7 @@ export interface FileRouteTypes {
     | '/_authenticated/suppliers'
     | '/_authenticated/tickets'
     | '/_authenticated/store/invoice/$id'
+    | '/api/public/hooks/daily-briefing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -391,6 +404,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiPublicHooksDailyBriefingRoute: typeof ApiPublicHooksDailyBriefingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -598,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/hooks/daily-briefing': {
+      id: '/api/public/hooks/daily-briefing'
+      path: '/api/public/hooks/daily-briefing'
+      fullPath: '/api/public/hooks/daily-briefing'
+      preLoaderRoute: typeof ApiPublicHooksDailyBriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/store/invoice/$id': {
       id: '/_authenticated/store/invoice/$id'
       path: '/invoice/$id'
@@ -684,6 +705,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiPublicHooksDailyBriefingRoute: ApiPublicHooksDailyBriefingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
