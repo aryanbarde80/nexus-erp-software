@@ -388,3 +388,39 @@ export const predictTicketSla = createServerFn({ method: "POST" })
     try { return { predictions: JSON.parse(raw).items ?? [] }; }
     catch { return { predictions: [] }; }
   });
+
+// ---------- 12. SLA feedback (learning loop) ----------
+const slaFeedbackSchema = z.object({
+  ticket_id: z.string().uuid(),
+  rating: z.enum(["up", "down"]),
+  predicted_eta_hours: z.number().int().nullable().optional(),
+  predicted_risk: z.string().max(20).nullable().optional(),
+  reason: z.string().max(500).nullable().optional(),
+  note: z.string().max(500).nullable().optional(),
+});
+export const submitSlaFeedback = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => slaFeedbackSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    // Upsert-like: replace prior rating for the same user+ticket so counts stay honest.
+    await supabase.from("sla_feedback").delete().eq("ticket_id", data.ticket_id).eq("user_id", userId);
+    const { error } = await supabase.from("sla_feedback").insert({
+      user_id: userId,
+      ticket_id: data.ticket_id,
+      rating: data.rating,
+      predicted_eta_hours: data.predicted_eta_hours ?? null,
+      predicted_risk: data.predicted_risk ?? null,
+      reason: data.reason ?? null,
+      note: data.note ?? null,
+    });
+    if (error) throw new Error(error.message);
+    await supabase.from("activity_log").insert({
+      user_id: userId,
+      entity_type: "ticket",
+      entity_id: data.ticket_id,
+      action: "sla_feedback",
+      description: `SLA prediction rated ${data.rating === "up" ? "accurate 👍" : "off 👎"} (predicted ~${data.predicted_eta_hours ?? "?"}h, ${data.predicted_risk ?? "?"} risk)`,
+    });
+    return { ok: true };
+  });
