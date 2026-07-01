@@ -751,6 +751,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sla_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          predicted_eta_hours: number | null
+          predicted_risk: string | null
+          rating: string
+          reason: string | null
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          predicted_eta_hours?: number | null
+          predicted_risk?: string | null
+          rating: string
+          reason?: string | null
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          predicted_eta_hours?: number | null
+          predicted_risk?: string | null
+          rating?: string
+          reason?: string | null
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       smart_reply_feedback: {
         Row: {
           created_at: string
