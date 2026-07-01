@@ -1,0 +1,17 @@
+# Netlify config for Nexus ERP.
+# This project builds a Cloudflare Worker (TanStack Start + @cloudflare/vite-plugin).
+# The safest Netlify strategy is to deploy the Worker to Cloudflare and proxy from Netlify.
+# Edit the `to` URL below to point at your deployed Worker.
+
+[build]
+  command = "bun run build"
+  publish = "dist/client"
+
+[[redirects]]
+  from = "/*"
+  to   = "https://REPLACE-ME.workers.dev/:splat"
+  status = 200
+  force = true
+
+# See DEPLOYMENT.md for the full story (native Netlify Functions requires switching the
+# TanStack Start server preset off Cloudflare, which is intentionally not done here).
