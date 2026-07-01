@@ -243,17 +243,24 @@ function Tickets() {
                       {t.status === "closed" || t.status === "resolved" ? (
                         <span className="text-xs text-muted-foreground">—</span>
                       ) : sla ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className={`inline-flex cursor-help items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${riskCls}`}>
-                              <span className="font-semibold">~{sla.eta_hours}h</span>
-                              <span className="opacity-75">· {sla.risk}</span>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <p className="text-xs">{sla.reason}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <div className="flex items-center gap-1.5">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className={`inline-flex cursor-help items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${riskCls}`}>
+                                <span className="font-semibold">~{sla.eta_hours}h</span>
+                                <span className="opacity-75">· {sla.risk}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="text-xs">{sla.reason}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <SlaFeedback
+                            ticketId={t.id}
+                            prediction={sla}
+                            current={feedbackByTicket.get(t.id)}
+                          />
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground">{slaQ.isFetching ? "…" : "—"}</span>
                       )}
