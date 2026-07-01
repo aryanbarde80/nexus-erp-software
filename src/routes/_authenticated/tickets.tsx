@@ -19,8 +19,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LifeBuoy, AlertCircle, CheckCircle2, Wand2, Timer, History } from "lucide-react";
-import { autoPrioritizeTickets, predictTicketSla } from "@/lib/ml.functions";
+import { LifeBuoy, AlertCircle, CheckCircle2, Wand2, Timer, History, ThumbsUp, ThumbsDown } from "lucide-react";
+import { autoPrioritizeTickets, predictTicketSla, submitSlaFeedback } from "@/lib/ml.functions";
 
 export const Route = createFileRoute("/_authenticated/tickets")({ component: Tickets });
 
