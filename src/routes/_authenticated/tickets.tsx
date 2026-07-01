@@ -87,6 +87,23 @@ function Tickets() {
     return m;
   }, [slaQ.data]);
 
+  // Existing SLA feedback so we can highlight the user's prior rating
+  const slaFeedbackQ = useQuery({
+    queryKey: ["sla-feedback"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sla_feedback")
+        .select("ticket_id,rating")
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  const feedbackByTicket = useMemo(() => {
+    const m = new Map<string, "up" | "down">();
+    (slaFeedbackQ.data ?? []).forEach((r: any) => { if (!m.has(r.ticket_id)) m.set(r.ticket_id, r.rating); });
+    return m;
+  }, [slaFeedbackQ.data]);
+
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [customer, setCustomer] = useState("");
