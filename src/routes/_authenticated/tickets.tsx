@@ -19,8 +19,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LifeBuoy, AlertCircle, CheckCircle2, Wand2, Timer, History } from "lucide-react";
-import { autoPrioritizeTickets, predictTicketSla } from "@/lib/ml.functions";
+import { LifeBuoy, AlertCircle, CheckCircle2, Wand2, Timer, History, ThumbsUp, ThumbsDown } from "lucide-react";
+import { autoPrioritizeTickets, predictTicketSla, submitSlaFeedback } from "@/lib/ml.functions";
 
 export const Route = createFileRoute("/_authenticated/tickets")({ component: Tickets });
 
@@ -86,6 +86,23 @@ function Tickets() {
     (slaQ.data?.predictions ?? []).forEach((p: any) => m.set(p.id, p));
     return m;
   }, [slaQ.data]);
+
+  // Existing SLA feedback so we can highlight the user's prior rating
+  const slaFeedbackQ = useQuery({
+    queryKey: ["sla-feedback"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sla_feedback")
+        .select("ticket_id,rating")
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  const feedbackByTicket = useMemo(() => {
+    const m = new Map<string, "up" | "down">();
+    (slaFeedbackQ.data ?? []).forEach((r: any) => { if (!m.has(r.ticket_id)) m.set(r.ticket_id, r.rating); });
+    return m;
+  }, [slaFeedbackQ.data]);
 
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -226,17 +243,24 @@ function Tickets() {
                       {t.status === "closed" || t.status === "resolved" ? (
                         <span className="text-xs text-muted-foreground">—</span>
                       ) : sla ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className={`inline-flex cursor-help items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${riskCls}`}>
-                              <span className="font-semibold">~{sla.eta_hours}h</span>
-                              <span className="opacity-75">· {sla.risk}</span>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <p className="text-xs">{sla.reason}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <div className="flex items-center gap-1.5">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className={`inline-flex cursor-help items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs ${riskCls}`}>
+                                <span className="font-semibold">~{sla.eta_hours}h</span>
+                                <span className="opacity-75">· {sla.risk}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="text-xs">{sla.reason}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <SlaFeedback
+                            ticketId={t.id}
+                            prediction={sla}
+                            current={feedbackByTicket.get(t.id)}
+                          />
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground">{slaQ.isFetching ? "…" : "—"}</span>
                       )}
@@ -304,5 +328,75 @@ function AutoPrioritize() {
     <Button variant="outline" size="sm" onClick={run} disabled={busy}>
       <Wand2 className="mr-2 h-3.5 w-3.5" /> {busy ? "Triaging…" : "AI auto-prioritize"}
     </Button>
+  );
+}
+
+function SlaFeedback({
+  ticketId,
+  prediction,
+  current,
+}: {
+  ticketId: string;
+  prediction: { eta_hours?: number; risk?: string; reason?: string };
+  current?: "up" | "down";
+}) {
+  const qc = useQueryClient();
+  const fn = useServerFn(submitSlaFeedback);
+  const [busy, setBusy] = useState(false);
+  const rate = async (rating: "up" | "down") => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await fn({
+        data: {
+          ticket_id: ticketId,
+          rating,
+          predicted_eta_hours: prediction.eta_hours ?? null,
+          predicted_risk: prediction.risk ?? null,
+          reason: prediction.reason ?? null,
+        },
+      });
+      toast.success(rating === "up" ? "Thanks — logged as accurate" : "Thanks — we'll learn from this");
+      qc.invalidateQueries({ queryKey: ["sla-feedback"] });
+      qc.invalidateQueries({ queryKey: ["ticket-audit"] });
+      qc.invalidateQueries({ queryKey: ["activity-feed"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not save feedback");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const base = "inline-flex h-6 w-6 items-center justify-center rounded border transition-colors disabled:opacity-50";
+  return (
+    <div className="flex items-center gap-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="SLA prediction was accurate"
+            disabled={busy}
+            onClick={() => rate("up")}
+            className={`${base} ${current === "up" ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-600" : "border-border/60 text-muted-foreground hover:text-emerald-600 hover:border-emerald-500/40"}`}
+          >
+            <ThumbsUp className="h-3 w-3" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent><p className="text-xs">Prediction was accurate</p></TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="SLA prediction was off"
+            disabled={busy}
+            onClick={() => rate("down")}
+            className={`${base} ${current === "down" ? "border-destructive/60 bg-destructive/15 text-destructive" : "border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40"}`}
+          >
+            <ThumbsDown className="h-3 w-3" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent><p className="text-xs">Prediction was off — the model will adjust</p></TooltipContent>
+      </Tooltip>
+    </div>
   );
 }
