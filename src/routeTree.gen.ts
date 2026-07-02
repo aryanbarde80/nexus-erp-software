@@ -29,6 +29,7 @@ import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedHrRouteImport } from './routes/_authenticated/hr'
+import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFinanceRouteImport } from './routes/_authenticated/finance'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -141,6 +142,11 @@ const AuthenticatedHrRoute = AuthenticatedHrRouteImport.update({
   path: '/hr',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFinanceRoute = AuthenticatedFinanceRouteImport.update({
   id: '/finance',
   path: '/finance',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/finance': typeof AuthenticatedFinanceRoute
+  '/goals': typeof AuthenticatedGoalsRoute
   '/hr': typeof AuthenticatedHrRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/finance': typeof AuthenticatedFinanceRoute
+  '/goals': typeof AuthenticatedGoalsRoute
   '/hr': typeof AuthenticatedHrRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/finance': typeof AuthenticatedFinanceRoute
+  '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/hr': typeof AuthenticatedHrRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/departments'
     | '/finance'
+    | '/goals'
     | '/hr'
     | '/intelligence'
     | '/inventory'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/departments'
     | '/finance'
+    | '/goals'
     | '/hr'
     | '/intelligence'
     | '/inventory'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/departments'
     | '/_authenticated/finance'
+    | '/_authenticated/goals'
     | '/_authenticated/hr'
     | '/_authenticated/intelligence'
     | '/_authenticated/inventory'
@@ -549,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHrRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/goals': {
+      id: '/_authenticated/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/finance': {
       id: '/_authenticated/finance'
       path: '/finance'
@@ -650,6 +669,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedFinanceRoute: typeof AuthenticatedFinanceRoute
+  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedHrRoute: typeof AuthenticatedHrRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
@@ -678,6 +698,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedFinanceRoute: AuthenticatedFinanceRoute,
+  AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedHrRoute: AuthenticatedHrRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
