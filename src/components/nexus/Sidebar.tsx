@@ -26,6 +26,8 @@ import {
   Activity,
   Brain,
   Target,
+  Zap,
+
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
