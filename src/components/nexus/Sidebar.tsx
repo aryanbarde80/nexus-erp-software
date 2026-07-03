@@ -26,6 +26,8 @@ import {
   Activity,
   Brain,
   Target,
+  Zap,
+
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +38,8 @@ const NAV = [
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/intelligence", label: "AI Intelligence", icon: Brain },
   { to: "/goals", label: "Goals & OKRs", icon: Target },
+  { to: "/automations", label: "Automations", icon: Zap },
+
   { to: "/activity", label: "Activity feed", icon: Activity },
   { to: "/sales", label: "Sales & CRM", icon: Users },
   { to: "/store", label: "Store", icon: ShoppingCart },

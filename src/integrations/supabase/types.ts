@@ -125,6 +125,57 @@ export type Database = {
         }
         Relationships: []
       }
+      automations: {
+        Row: {
+          action: string
+          action_params: Json
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          last_run_count: number
+          name: string
+          params: Json
+          total_runs: number
+          trigger: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          action_params?: Json
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          last_run_count?: number
+          name: string
+          params?: Json
+          total_runs?: number
+          trigger: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          action_params?: Json
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          last_run_count?: number
+          name?: string
+          params?: Json
+          total_runs?: number
+          trigger?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       briefings: {
         Row: {
           created_at: string
