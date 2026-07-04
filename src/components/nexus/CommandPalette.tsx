@@ -6,7 +6,7 @@ import {
 import {
   LayoutDashboard, Users, Package, Wallet, UserCog, Briefcase, Truck, BarChart3, Settings, FileText,
   CreditCard, Calendar, CalendarOff, Boxes, HardDrive, LifeBuoy, FileSignature, Megaphone, Building2,
-  ShoppingCart, Sparkles, KanbanSquare, Bot, Activity, Brain, Target, Zap,
+  ShoppingCart, Sparkles, KanbanSquare, Bot, Activity, Brain, Target, Zap, Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { seedDemoData } from "@/lib/seed-demo";
@@ -17,6 +17,7 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/intelligence", label: "AI Intelligence", icon: Brain },
+  { to: "/vision", label: "Vision AI", icon: Eye },
   { to: "/goals", label: "Goals & OKRs", icon: Target },
   { to: "/automations", label: "Automations", icon: Zap },
 
