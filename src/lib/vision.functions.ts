@@ -31,10 +31,10 @@ async function callVisionAI(prompt: string, image: string, opts: { json?: boolea
   return j.choices?.[0]?.message?.content ?? "";
 }
 
-const imgSchema = z.string().refine(
+const imgSchema = z.string().max(8_500_000).refine(
   (s) => s.startsWith("data:image/") || s.startsWith("https://"),
   "image must be a data URL or https URL"
-).max(8_500_000);
+);
 
 // ---------- 1. Receipt / invoice scanner → structured expense ----------
 export const scanReceipt = createServerFn({ method: "POST" })

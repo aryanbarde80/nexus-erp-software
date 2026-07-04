@@ -439,8 +439,7 @@ function VisionPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vision Intelligence"
-        description="Deep-learning computer vision powered by Gemini. Snap it, structure it, ship it."
-        icon={<Eye className="h-6 w-6" />}
+        subtitle="Deep-learning computer vision powered by Gemini. Snap it, structure it, ship it."
       />
       <Tabs defaultValue="receipt">
         <TabsList className="flex flex-wrap">

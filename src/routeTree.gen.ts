@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVisionRouteImport } from './routes/_authenticated/vision'
 import { Route as AuthenticatedTicketsRouteImport } from './routes/_authenticated/tickets'
 import { Route as AuthenticatedSuppliersRouteImport } from './routes/_authenticated/suppliers'
 import { Route as AuthenticatedStoreRouteImport } from './routes/_authenticated/store'
@@ -61,6 +62,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedVisionRoute = AuthenticatedVisionRouteImport.update({
+  id: '/vision',
+  path: '/vision',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTicketsRoute = AuthenticatedTicketsRouteImport.update({
   id: '/tickets',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/tickets': typeof AuthenticatedTicketsRoute
+  '/vision': typeof AuthenticatedVisionRoute
   '/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
   '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
 }
@@ -279,6 +286,7 @@ export interface FileRoutesByTo {
   '/store': typeof AuthenticatedStoreRouteWithChildren
   '/suppliers': typeof AuthenticatedSuppliersRoute
   '/tickets': typeof AuthenticatedTicketsRoute
+  '/vision': typeof AuthenticatedVisionRoute
   '/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
   '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
 }
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/_authenticated/store': typeof AuthenticatedStoreRouteWithChildren
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
   '/_authenticated/tickets': typeof AuthenticatedTicketsRoute
+  '/_authenticated/vision': typeof AuthenticatedVisionRoute
   '/_authenticated/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
   '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
 }
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/store'
     | '/suppliers'
     | '/tickets'
+    | '/vision'
     | '/store/invoice/$id'
     | '/api/public/hooks/daily-briefing'
   fileRoutesByTo: FileRoutesByTo
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/store'
     | '/suppliers'
     | '/tickets'
+    | '/vision'
     | '/store/invoice/$id'
     | '/api/public/hooks/daily-briefing'
   id:
@@ -420,6 +431,7 @@ export interface FileRouteTypes {
     | '/_authenticated/store'
     | '/_authenticated/suppliers'
     | '/_authenticated/tickets'
+    | '/_authenticated/vision'
     | '/_authenticated/store/invoice/$id'
     | '/api/public/hooks/daily-briefing'
   fileRoutesById: FileRoutesById
@@ -461,6 +473,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/vision': {
+      id: '/_authenticated/vision'
+      path: '/vision'
+      fullPath: '/vision'
+      preLoaderRoute: typeof AuthenticatedVisionRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tickets': {
       id: '/_authenticated/tickets'
@@ -707,6 +726,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedStoreRoute: typeof AuthenticatedStoreRouteWithChildren
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
   AuthenticatedTicketsRoute: typeof AuthenticatedTicketsRoute
+  AuthenticatedVisionRoute: typeof AuthenticatedVisionRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -737,6 +757,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedStoreRoute: AuthenticatedStoreRouteWithChildren,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
   AuthenticatedTicketsRoute: AuthenticatedTicketsRoute,
+  AuthenticatedVisionRoute: AuthenticatedVisionRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -753,13 +774,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
