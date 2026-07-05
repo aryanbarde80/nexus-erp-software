@@ -1,6 +1,7 @@
 import { CommandPaletteButton } from "./CommandPalette";
 import { NotificationsBell } from "./NotificationsBell";
 import { UserMenu } from "./UserMenu";
+import { VoiceCopilot } from "./VoiceCopilot";
 
 export function Topbar() {
   return (
@@ -8,6 +9,7 @@ export function Topbar() {
       <div className="flex-1">
         <CommandPaletteButton />
       </div>
+      <VoiceCopilot />
       <NotificationsBell />
       <UserMenu />
     </div>
