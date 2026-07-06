@@ -29,6 +29,7 @@ import {
   Zap,
   Eye,
   Radar,
+  Cpu,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,7 @@ const NAV = [
   { to: "/intelligence", label: "AI Intelligence", icon: Brain },
   { to: "/radar", label: "Anomaly Radar", icon: Radar },
   { to: "/vision", label: "Vision AI", icon: Eye },
+  { to: "/iot", label: "IoT & Edge", icon: Cpu },
   { to: "/goals", label: "Goals & OKRs", icon: Target },
   { to: "/automations", label: "Automations", icon: Zap },
 

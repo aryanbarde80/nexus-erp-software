@@ -323,6 +323,201 @@ export type Database = {
         }
         Relationships: []
       }
+      device_commands: {
+        Row: {
+          acked_at: string | null
+          args: Json
+          command: string
+          created_at: string
+          delivered_at: string | null
+          device_id: string
+          id: string
+          result: Json | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          acked_at?: string | null
+          args?: Json
+          command: string
+          created_at?: string
+          delivered_at?: string | null
+          device_id: string
+          id?: string
+          result?: Json | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          acked_at?: string | null
+          args?: Json
+          command?: string
+          created_at?: string
+          delivered_at?: string | null
+          device_id?: string
+          id?: string
+          result?: Json | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_commands_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      device_rules: {
+        Row: {
+          action: string
+          action_args: Json
+          created_at: string
+          device_id: string | null
+          enabled: boolean
+          id: string
+          last_triggered_at: string | null
+          metric: string
+          name: string
+          operator: string
+          threshold: number
+          trigger_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          action_args?: Json
+          created_at?: string
+          device_id?: string | null
+          enabled?: boolean
+          id?: string
+          last_triggered_at?: string | null
+          metric: string
+          name: string
+          operator?: string
+          threshold: number
+          trigger_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          action_args?: Json
+          created_at?: string
+          device_id?: string | null
+          enabled?: boolean
+          id?: string
+          last_triggered_at?: string | null
+          metric?: string
+          name?: string
+          operator?: string
+          threshold?: number
+          trigger_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_rules_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      device_telemetry: {
+        Row: {
+          device_id: string
+          id: number
+          metric: string
+          payload: Json
+          recorded_at: string
+          unit: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          device_id: string
+          id?: number
+          metric: string
+          payload?: Json
+          recorded_at?: string
+          unit?: string | null
+          user_id: string
+          value: number
+        }
+        Update: {
+          device_id?: string
+          id?: number
+          metric?: string
+          payload?: Json
+          recorded_at?: string
+          unit?: string | null
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_telemetry_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devices: {
+        Row: {
+          created_at: string
+          device_key: string
+          firmware: string | null
+          id: string
+          kind: string
+          last_ip: string | null
+          last_seen: string | null
+          location: string | null
+          meta: Json
+          name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_key?: string
+          firmware?: string | null
+          id?: string
+          kind?: string
+          last_ip?: string | null
+          last_seen?: string | null
+          location?: string | null
+          meta?: Json
+          name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_key?: string
+          firmware?: string | null
+          id?: string
+          kind?: string
+          last_ip?: string | null
+          last_seen?: string | null
+          location?: string | null
+          meta?: Json
+          name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           created_at: string

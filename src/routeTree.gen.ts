@@ -28,6 +28,7 @@ import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedLeavesRouteImport } from './routes/_authenticated/leaves'
 import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
+import { Route as AuthenticatedIotRouteImport } from './routes/_authenticated/iot'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedHrRouteImport } from './routes/_authenticated/hr'
@@ -42,6 +43,8 @@ import { Route as AuthenticatedAssistantRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as ApiPublicIotIngestRouteImport } from './routes/api/public/iot/ingest'
+import { Route as ApiPublicIotAckRouteImport } from './routes/api/public/iot/ack'
 import { Route as ApiPublicHooksDailyBriefingRouteImport } from './routes/api/public/hooks/daily-briefing'
 import { Route as AuthenticatedStoreInvoiceIdRouteImport } from './routes/_authenticated/store.invoice.$id'
 
@@ -139,6 +142,11 @@ const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
   path: '/kanban',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedIotRoute = AuthenticatedIotRouteImport.update({
+  id: '/iot',
+  path: '/iot',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -213,6 +221,16 @@ const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicIotIngestRoute = ApiPublicIotIngestRouteImport.update({
+  id: '/api/public/iot/ingest',
+  path: '/api/public/iot/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicIotAckRoute = ApiPublicIotAckRouteImport.update({
+  id: '/api/public/iot/ack',
+  path: '/api/public/iot/ack',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksDailyBriefingRoute =
   ApiPublicHooksDailyBriefingRouteImport.update({
     id: '/api/public/hooks/daily-briefing',
@@ -244,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/hr': typeof AuthenticatedHrRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/iot': typeof AuthenticatedIotRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/leaves': typeof AuthenticatedLeavesRoute
   '/orders': typeof AuthenticatedOrdersRoute
@@ -261,6 +280,8 @@ export interface FileRoutesByFullPath {
   '/vision': typeof AuthenticatedVisionRoute
   '/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
   '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
+  '/api/public/iot/ack': typeof ApiPublicIotAckRoute
+  '/api/public/iot/ingest': typeof ApiPublicIotIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -280,6 +301,7 @@ export interface FileRoutesByTo {
   '/hr': typeof AuthenticatedHrRoute
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/inventory': typeof AuthenticatedInventoryRoute
+  '/iot': typeof AuthenticatedIotRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/leaves': typeof AuthenticatedLeavesRoute
   '/orders': typeof AuthenticatedOrdersRoute
@@ -297,6 +319,8 @@ export interface FileRoutesByTo {
   '/vision': typeof AuthenticatedVisionRoute
   '/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
   '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
+  '/api/public/iot/ack': typeof ApiPublicIotAckRoute
+  '/api/public/iot/ingest': typeof ApiPublicIotIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -318,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/hr': typeof AuthenticatedHrRoute
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
+  '/_authenticated/iot': typeof AuthenticatedIotRoute
   '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
   '/_authenticated/leaves': typeof AuthenticatedLeavesRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRoute
@@ -335,6 +360,8 @@ export interface FileRoutesById {
   '/_authenticated/vision': typeof AuthenticatedVisionRoute
   '/_authenticated/store/invoice/$id': typeof AuthenticatedStoreInvoiceIdRoute
   '/api/public/hooks/daily-briefing': typeof ApiPublicHooksDailyBriefingRoute
+  '/api/public/iot/ack': typeof ApiPublicIotAckRoute
+  '/api/public/iot/ingest': typeof ApiPublicIotIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -356,6 +383,7 @@ export interface FileRouteTypes {
     | '/hr'
     | '/intelligence'
     | '/inventory'
+    | '/iot'
     | '/kanban'
     | '/leaves'
     | '/orders'
@@ -373,6 +401,8 @@ export interface FileRouteTypes {
     | '/vision'
     | '/store/invoice/$id'
     | '/api/public/hooks/daily-briefing'
+    | '/api/public/iot/ack'
+    | '/api/public/iot/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -392,6 +422,7 @@ export interface FileRouteTypes {
     | '/hr'
     | '/intelligence'
     | '/inventory'
+    | '/iot'
     | '/kanban'
     | '/leaves'
     | '/orders'
@@ -409,6 +440,8 @@ export interface FileRouteTypes {
     | '/vision'
     | '/store/invoice/$id'
     | '/api/public/hooks/daily-briefing'
+    | '/api/public/iot/ack'
+    | '/api/public/iot/ingest'
   id:
     | '__root__'
     | '/'
@@ -429,6 +462,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hr'
     | '/_authenticated/intelligence'
     | '/_authenticated/inventory'
+    | '/_authenticated/iot'
     | '/_authenticated/kanban'
     | '/_authenticated/leaves'
     | '/_authenticated/orders'
@@ -446,6 +480,8 @@ export interface FileRouteTypes {
     | '/_authenticated/vision'
     | '/_authenticated/store/invoice/$id'
     | '/api/public/hooks/daily-briefing'
+    | '/api/public/iot/ack'
+    | '/api/public/iot/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -454,6 +490,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ApiPublicHooksDailyBriefingRoute: typeof ApiPublicHooksDailyBriefingRoute
+  ApiPublicIotAckRoute: typeof ApiPublicIotAckRoute
+  ApiPublicIotIngestRoute: typeof ApiPublicIotIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -591,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKanbanRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/iot': {
+      id: '/_authenticated/iot'
+      path: '/iot'
+      fullPath: '/iot'
+      preLoaderRoute: typeof AuthenticatedIotRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/inventory': {
       id: '/_authenticated/inventory'
       path: '/inventory'
@@ -689,6 +734,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/iot/ingest': {
+      id: '/api/public/iot/ingest'
+      path: '/api/public/iot/ingest'
+      fullPath: '/api/public/iot/ingest'
+      preLoaderRoute: typeof ApiPublicIotIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/iot/ack': {
+      id: '/api/public/iot/ack'
+      path: '/api/public/iot/ack'
+      fullPath: '/api/public/iot/ack'
+      preLoaderRoute: typeof ApiPublicIotAckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/daily-briefing': {
       id: '/api/public/hooks/daily-briefing'
       path: '/api/public/hooks/daily-briefing'
@@ -732,6 +791,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHrRoute: typeof AuthenticatedHrRoute
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
+  AuthenticatedIotRoute: typeof AuthenticatedIotRoute
   AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
   AuthenticatedLeavesRoute: typeof AuthenticatedLeavesRoute
   AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRoute
@@ -764,6 +824,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHrRoute: AuthenticatedHrRoute,
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
+  AuthenticatedIotRoute: AuthenticatedIotRoute,
   AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
   AuthenticatedLeavesRoute: AuthenticatedLeavesRoute,
   AuthenticatedOrdersRoute: AuthenticatedOrdersRoute,
@@ -791,6 +852,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ApiPublicHooksDailyBriefingRoute: ApiPublicHooksDailyBriefingRoute,
+  ApiPublicIotAckRoute: ApiPublicIotAckRoute,
+  ApiPublicIotIngestRoute: ApiPublicIotIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
